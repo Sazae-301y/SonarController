@@ -1,0 +1,253 @@
+<Window x:Class="SonarController2.Views.TrayPopupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:SonarController2.Helpers"
+        Title="SonarController2"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="Manual"
+        Left="-10000" Top="-10000"
+        Opacity="0"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="Transparent"
+        Deactivated="Window_Deactivated">
+    <Window.Resources>
+        <helpers:PercentConverter x:Key="PercentConverter"/>
+        <helpers:NullToBoolConverter x:Key="NullToBoolConverter"/>
+        <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis"/>
+        <helpers:HexToBrushConverter x:Key="HexToBrush"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#F0F0F0"/>
+        </Style>
+
+        <Style x:Key="ChannelColumn" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Width" Value="128"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- Colorful vertical slider (filled track below thumb, dim track above) -->
+        <Style x:Key="SliderThumbStyle" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Ellipse Width="20" Height="20" Fill="White" Stroke="#40000000" StrokeThickness="1"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SliderFilledTrackStyle" TargetType="RepeatButton">
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Width="8" CornerRadius="4" HorizontalAlignment="Center"
+                                Background="{Binding Tag, RelativeSource={RelativeSource AncestorType=Slider}, Converter={StaticResource HexToBrush}}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SliderEmptyTrackStyle" TargetType="RepeatButton">
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Width="8" CornerRadius="4" Background="#33FFFFFF" HorizontalAlignment="Center"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ColorfulVerticalSlider" TargetType="Slider">
+            <Setter Property="Orientation" Value="Vertical"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Track x:Name="PART_Track" Width="24">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource SliderFilledTrackStyle}" Command="Slider.DecreaseLarge"/>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource SliderEmptyTrackStyle}" Command="Slider.IncreaseLarge"/>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource SliderThumbStyle}" Height="20" Width="24"/>
+                            </Track.Thumb>
+                        </Track>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Round toggle buttons (routing / mute) -->
+        <Style x:Key="RoutingToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Bg" CornerRadius="14" Background="#33FFFFFF">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bg" Property="Background"
+                                        Value="{Binding Tag, RelativeSource={RelativeSource AncestorType=ToggleButton}, Converter={StaticResource HexToBrush}}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="MuteToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource RoutingToggleStyle}">
+            <Setter Property="Tag" Value="#E53935"/>
+        </Style>
+
+        <Style x:Key="PillToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Bg" CornerRadius="12" Background="#33FFFFFF" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="#00BFA5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#E6181822" CornerRadius="18" BorderBrush="#26FFFFFF" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="24" ShadowDepth="4"/>
+        </Border.Effect>
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="🎚️ Sonar Controller" FontSize="16" FontWeight="Bold"
+                           Foreground="#7C4DFF" VerticalAlignment="Center"/>
+                <CheckBox Grid.Column="1" Content="👥 Audience" Margin="0,0,12,0" VerticalAlignment="Center"
+                          Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}"
+                          IsChecked="{Binding AudienceMonitoring}"/>
+                <ToggleButton Grid.Column="2" Content="📡 Streamer" Margin="0,0,8,0"
+                              Style="{StaticResource PillToggleStyle}"
+                              IsChecked="{Binding IsStreamerMode}"/>
+                <Button Grid.Column="3" Content="⚙" Width="28" Height="28" Click="SettingsButton_Click"/>
+            </Grid>
+
+            <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="#FF6B6B" TextWrapping="Wrap"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}"
+                       Margin="0,0,0,8" MaxWidth="760"/>
+
+            <!-- Channel mixer -->
+            <ItemsControl Grid.Row="2" ItemsSource="{Binding Channels}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource ChannelColumn}"
+                                Background="{Binding AccentColor, Converter={StaticResource HexToBrush}}"
+                                BorderBrush="{Binding AccentColor, Converter={StaticResource HexToBrush}}"
+                                Opacity="0.96">
+                            <Border Background="#CC181822" CornerRadius="8" Margin="-10" Padding="10">
+                                <StackPanel>
+                                    <TextBlock HorizontalAlignment="Center" Margin="0,0,0,8" FontWeight="SemiBold"
+                                               Foreground="{Binding AccentColor, Converter={StaticResource HexToBrush}}">
+                                        <Run Text="{Binding Icon, Mode=OneWay}"/>
+                                        <Run Text=" "/>
+                                        <Run Text="{Binding DisplayName, Mode=OneWay}"/>
+                                    </TextBlock>
+
+                                    <!-- Streamer: routing toggles (personal / stream) -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8"
+                                                Visibility="{Binding HasRouting, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsStreamerMode}" Value="False">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <ToggleButton Style="{StaticResource RoutingToggleStyle}" Content="🎧" ToolTip="Personalミックスへルーティング"
+                                                      Tag="{Binding AccentColor}" IsChecked="{Binding PersonalRouted}"/>
+                                        <ToggleButton Style="{StaticResource RoutingToggleStyle}" Content="📡" ToolTip="Streamミックスへルーティング"
+                                                      Tag="{Binding AccentColor}" Margin="6,0,0,0" IsChecked="{Binding StreamRouted}"/>
+                                    </StackPanel>
+
+                                    <!-- Classic: single vertical slider + mute -->
+                                    <StackPanel HorizontalAlignment="Center"
+                                                Visibility="{Binding IsStreamerMode, Converter={StaticResource InverseBoolToVis}}">
+                                        <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                                Minimum="0" Maximum="1" SmallChange="0.01"
+                                                Tag="{Binding AccentColor}" Value="{Binding ClassicVolume}"/>
+                                        <TextBlock Text="{Binding ClassicVolume, Converter={StaticResource PercentConverter}}"
+                                                   HorizontalAlignment="Center" Margin="0,6,0,6"/>
+                                        <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="Mute"
+                                                      HorizontalAlignment="Center" IsChecked="{Binding ClassicMuted}"/>
+                                    </StackPanel>
+
+                                    <!-- Streamer: Personal/Stream vertical sliders side by side -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                                Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                                    Minimum="0" Maximum="1" SmallChange="0.01"
+                                                    Tag="{Binding AccentColor}" Value="{Binding PersonalVolume}"/>
+                                            <TextBlock Text="{Binding PersonalVolume, Converter={StaticResource PercentConverter}}"
+                                                       HorizontalAlignment="Center" Margin="0,6,0,6"/>
+                                            <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="Personal Mute"
+                                                          HorizontalAlignment="Center" IsChecked="{Binding PersonalMuted}"/>
+                                        </StackPanel>
+                                        <StackPanel HorizontalAlignment="Center" Margin="8,0,0,0">
+                                            <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                                    Minimum="0" Maximum="1" SmallChange="0.01"
+                                                    Tag="{Binding AccentColor}" Value="{Binding StreamVolume}"/>
+                                            <TextBlock Text="{Binding StreamVolume, Converter={StaticResource PercentConverter}}"
+                                                       HorizontalAlignment="Center" Margin="0,6,0,6"/>
+                                            <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="Stream Mute"
+                                                          HorizontalAlignment="Center" IsChecked="{Binding StreamMuted}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <ComboBox ItemsSource="{Binding EqConfigs}" SelectedItem="{Binding SelectedEqConfig}"
+                                              DisplayMemberPath="Name" Margin="0,10,0,0"
+                                              Visibility="{Binding HasEq, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Border>
+</Window>
