@@ -164,9 +164,8 @@ public class SonarService : ISonarService
 
         var redirectionId = mix == SonarMix.Personal ? "monitoring" : "streaming";
         var state = enabled.ToString().ToLowerInvariant();
-        // 注意: 実機のDevToolsで確認できたのはGETレスポンスのみのため、PUTパスはvolumeSettingsの命名規則
-        // (volumeSettings/{mix}/{channel}/isMuted/{value} 相当)から類推した実装。要検証。
-        await _http.PutAsync($"streamRedirections/{redirectionId}/status/{channel.ToJsonKey()}/isEnabled/{state}", ct);
+        // PUT streamRedirections/{monitoring|streaming}/redirections/{role}/isEnabled/{true|false}（実機のDevToolsで確認済み）
+        await _http.PutAsync($"streamRedirections/{redirectionId}/redirections/{channel.ToJsonKey()}/isEnabled/{state}", ct);
     }
 
     private static SonarChannel? RoleKeyToChannel(string? roleKey) => roleKey switch

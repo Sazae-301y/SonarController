@@ -121,19 +121,13 @@ public partial class TrayViewModel : ViewModelBase
     {
         try
         {
-            var routing = IsStreamerMode
-                ? await _sonar.GetRoutingStatusesAsync()
-                : null;
-
             foreach (var vm in Channels)
             {
                 if (IsStreamerMode)
                 {
                     var personal = await _sonar.GetVolumeAsync(vm.Channel, SonarMix.Personal);
                     var stream = await _sonar.GetVolumeAsync(vm.Channel, SonarMix.Stream);
-                    var personalRouted = !vm.HasRouting || (routing!.TryGetValue((vm.Channel, SonarMix.Personal), out var pr) && pr);
-                    var streamRouted = !vm.HasRouting || (routing!.TryGetValue((vm.Channel, SonarMix.Stream), out var sr) && sr);
-                    vm.RefreshStreamerVolumes(personal, stream, personalRouted, streamRouted);
+                    vm.RefreshStreamerVolumes(personal, stream);
                 }
                 else
                 {

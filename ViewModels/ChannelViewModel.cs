@@ -12,7 +12,11 @@ namespace SonarController2.ViewModels;
 public partial class ChannelViewModel : ViewModelBase
 {
     private readonly ISonarService _sonar;
+    private readonly SemaphoreSlim _volumeWriteGate = new(1, 1);
     private bool _suppressEvents;
+    private CancellationTokenSource? _classicVolumeWrite;
+    private CancellationTokenSource? _personalVolumeWrite;
+    private CancellationTokenSource? _streamVolumeWrite;
 
     // 直近にユーザーがスライダーを操作した時刻。ポーリング更新でその値を一時的に上書きしないためのガード
     private static readonly TimeSpan LocalChangeGracePeriod = TimeSpan.FromMilliseconds(800);
@@ -94,7 +98,8 @@ public partial class ChannelViewModel : ViewModelBase
     {
         if (_suppressEvents) return;
         _classicVolumeChangedAt = DateTime.UtcNow;
-        _ = TryAsync(() => _sonar.SetVolumeAsync(Channel, Math.Clamp(value, 0.0, 1.0)));
+        ScheduleVolumeWrite(ref _classicVolumeWrite,
+            () => _sonar.SetVolumeAsync(Channel, Math.Clamp(value, 0.0, 1.0)));
     }
 
     partial void OnClassicMutedChanged(bool value)
@@ -107,7 +112,8 @@ public partial class ChannelViewModel : ViewModelBase
     {
         if (_suppressEvents) return;
         _personalVolumeChangedAt = DateTime.UtcNow;
-        _ = TryAsync(() => _sonar.SetVolumeAsync(Channel, SonarMix.Personal, Math.Clamp(value, 0.0, 1.0)));
+        ScheduleVolumeWrite(ref _personalVolumeWrite,
+            () => _sonar.SetVolumeAsync(Channel, SonarMix.Personal, Math.Clamp(value, 0.0, 1.0)));
     }
 
     partial void OnPersonalMutedChanged(bool value)
@@ -120,7 +126,8 @@ public partial class ChannelViewModel : ViewModelBase
     {
         if (_suppressEvents) return;
         _streamVolumeChangedAt = DateTime.UtcNow;
-        _ = TryAsync(() => _sonar.SetVolumeAsync(Channel, SonarMix.Stream, Math.Clamp(value, 0.0, 1.0)));
+        ScheduleVolumeWrite(ref _streamVolumeWrite,
+            () => _sonar.SetVolumeAsync(Channel, SonarMix.Stream, Math.Clamp(value, 0.0, 1.0)));
     }
 
     partial void OnStreamMutedChanged(bool value)
@@ -151,6 +158,34 @@ public partial class ChannelViewModel : ViewModelBase
     {
         try { await action(); }
         catch { /* 失敗しても UI は動き続ける */ }
+    }
+
+    private void ScheduleVolumeWrite(ref CancellationTokenSource? pending, Func<Task> action)
+    {
+        pending?.Cancel();
+        pending?.Dispose();
+        pending = new CancellationTokenSource();
+        _ = TryDebouncedVolumeAsync(pending, action);
+    }
+
+    private async Task TryDebouncedVolumeAsync(CancellationTokenSource pending, Func<Task> action)
+    {
+        try
+        {
+            await Task.Delay(120, pending.Token);
+            await _volumeWriteGate.WaitAsync(pending.Token);
+            try
+            {
+                await TryAsync(action);
+            }
+            finally
+            {
+                _volumeWriteGate.Release();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     /// <summary>Classic モードの値をセットする（変更イベントを抑止する）</summary>
@@ -197,19 +232,16 @@ public partial class ChannelViewModel : ViewModelBase
     }
 
     /// <summary>Streamer モードでのポーリング反映（EQは対象外）</summary>
-    public void RefreshStreamerVolumes(
-        VolumeSettings personal, VolumeSettings stream, bool personalRouted, bool streamRouted)
+    public void RefreshStreamerVolumes(VolumeSettings personal, VolumeSettings stream)
     {
         var wasSuppressed = _suppressEvents;
         _suppressEvents = true;
         if (DateTime.UtcNow - _personalVolumeChangedAt > LocalChangeGracePeriod)
             PersonalVolume = personal.Volume;
         PersonalMuted = personal.Muted;
-        PersonalRouted = personalRouted;
         if (DateTime.UtcNow - _streamVolumeChangedAt > LocalChangeGracePeriod)
             StreamVolume = stream.Volume;
         StreamMuted = stream.Muted;
-        StreamRouted = streamRouted;
         _suppressEvents = wasSuppressed;
     }
 
