@@ -43,6 +43,9 @@ public partial class TrayViewModel : ViewModelBase
     public TrayViewModel(ISonarService sonar)
     {
         _sonar = sonar;
+
+        foreach (var channel in AllChannels)
+            Channels.Add(new ChannelViewModel(_sonar, channel));
     }
 
     [RelayCommand]
@@ -78,12 +81,6 @@ public partial class TrayViewModel : ViewModelBase
 
     private async Task LoadChannelsAsync()
     {
-        if (Channels.Count == 0)
-        {
-            foreach (var ch in AllChannels)
-                Channels.Add(new ChannelViewModel(_sonar, ch));
-        }
-
         var routing = IsStreamerMode
             ? await _sonar.GetRoutingStatusesAsync()
             : null;

@@ -49,6 +49,7 @@ public partial class App : Application
         services.AddSingleton<SonarAddressResolver>();
         services.AddSingleton<SonarHttpClient>();
         services.AddSingleton<ISonarService, SonarService>();
+        services.AddSingleton<IAudioEndpointVolumeService, AudioEndpointVolumeService>();
 
         // ViewModels（トレイポップアップ・設定ウィンドウとも常駐中は使い回すためSingleton）
         services.AddSingleton<TrayViewModel>();
