@@ -39,13 +39,18 @@ public partial class TrayViewModel : ViewModelBase
     private bool _audienceMonitoring;
 
     public ObservableCollection<ChannelViewModel> Channels { get; } = new();
+    public ObservableCollection<DeviceMixViewModel> DeviceMixes { get; } = new();
 
-    public TrayViewModel(ISonarService sonar)
+    public TrayViewModel(ISonarService sonar, IAudioEndpointVolumeService endpointVolume)
     {
         _sonar = sonar;
 
         foreach (var channel in AllChannels)
             Channels.Add(new ChannelViewModel(_sonar, channel));
+
+        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "個人ミックス", SonarMix.Personal, isInput: false));
+        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "ストリームミックス", SonarMix.Stream, isInput: false));
+        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "マイクの入力", mix: null, isInput: true));
     }
 
     [RelayCommand]
@@ -62,6 +67,10 @@ public partial class TrayViewModel : ViewModelBase
             IsStreamerMode = mode == SonarMode.Streamer;
             AudienceMonitoring = await _sonar.GetAudienceMonitoringAsync();
             _suppressEvents = false;
+
+            var devices = await _sonar.GetAudioDevicesAsync();
+            foreach (var deviceMix in DeviceMixes)
+                await deviceMix.LoadAsync(devices);
 
             await LoadChannelsAsync();
         }

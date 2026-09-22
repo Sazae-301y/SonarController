@@ -167,7 +167,6 @@
 
             <!-- Device mix controls: selection first, then endpoint volume -->
             <ItemsControl Grid.Row="2" ItemsSource="{Binding DeviceMixes}"
-                          Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}"
                           Margin="0,0,0,8">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
