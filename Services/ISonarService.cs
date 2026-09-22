@@ -40,6 +40,8 @@ public interface ISonarService
 
     // ---- Devices ----
     Task<IReadOnlyList<AudioDevice>> GetAudioDevicesAsync(CancellationToken ct = default);
+    Task<AudioDevice?> GetSelectedDeviceAsync(AudioDataFlow dataFlow, SonarMix? mix = null, CancellationToken ct = default);
+    Task SetSelectedDeviceAsync(AudioDevice device, SonarMix? mix = null, CancellationToken ct = default);
 
     // ---- Streamer Mode ----
     Task<bool> GetAudienceMonitoringAsync(CancellationToken ct = default);

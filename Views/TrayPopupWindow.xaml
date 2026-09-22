@@ -26,10 +26,10 @@
         </Style>
 
         <Style x:Key="ChannelColumn" TargetType="Border">
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="Margin" Value="0,0,10,0"/>
-            <Setter Property="Width" Value="128"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="7"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="Width" Value="104"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
@@ -134,22 +134,23 @@
         <Border.Effect>
             <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="24" ShadowDepth="4"/>
         </Border.Effect>
-        <Grid Margin="16">
+        <Grid Margin="10">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid Grid.Row="0" Margin="0,0,0,8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="🎚️ Sonar Controller" FontSize="16" FontWeight="Bold"
+                <TextBlock Grid.Column="0" Text="🎚️ Sonar Controller" FontSize="14" FontWeight="Bold"
                            Foreground="#7C4DFF" VerticalAlignment="Center"/>
                 <CheckBox Grid.Column="1" Content="👥 Audience" Margin="0,0,12,0" VerticalAlignment="Center"
                           Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}"
@@ -164,8 +165,37 @@
                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}"
                        Margin="0,0,0,8" MaxWidth="760"/>
 
+            <!-- Device mix controls: selection first, then endpoint volume -->
+            <ItemsControl Grid.Row="2" ItemsSource="{Binding DeviceMixes}"
+                          Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}"
+                          Margin="0,0,0,8">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,1,0,1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="92"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="108"/>
+                                <ColumnDefinition Width="42"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding DisplayName}" FontSize="11"
+                                       VerticalAlignment="Center"
+                                       Foreground="#D7DCE2"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding Devices}"
+                                      SelectedItem="{Binding SelectedDevice}"
+                                      DisplayMemberPath="FriendlyName" Height="24" FontSize="11"/>
+                            <Slider Grid.Column="2" Minimum="0" Maximum="1" SmallChange="0.01"
+                                    Value="{Binding Volume}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Volume, Converter={StaticResource PercentConverter}}"
+                                       FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Foreground="#D7DCE2"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <!-- Channel mixer -->
-            <ItemsControl Grid.Row="2" ItemsSource="{Binding Channels}">
+            <ItemsControl Grid.Row="3" ItemsSource="{Binding Channels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal"/>
@@ -207,7 +237,7 @@
                                     <!-- Classic: single vertical slider + mute -->
                                     <StackPanel HorizontalAlignment="Center"
                                                 Visibility="{Binding IsStreamerMode, Converter={StaticResource InverseBoolToVis}}">
-                                        <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                        <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="150"
                                                 Minimum="0" Maximum="1" SmallChange="0.01"
                                                 Tag="{Binding AccentColor}" Value="{Binding ClassicVolume}"/>
                                         <TextBlock Text="{Binding ClassicVolume, Converter={StaticResource PercentConverter}}"
@@ -220,7 +250,7 @@
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                                                 Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}">
                                         <StackPanel HorizontalAlignment="Center">
-                                            <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                            <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="150"
                                                     Minimum="0" Maximum="1" SmallChange="0.01"
                                                     Tag="{Binding AccentColor}" Value="{Binding PersonalVolume}"/>
                                             <TextBlock Text="{Binding PersonalVolume, Converter={StaticResource PercentConverter}}"
@@ -229,7 +259,7 @@
                                                           HorizontalAlignment="Center" IsChecked="{Binding PersonalMuted}"/>
                                         </StackPanel>
                                         <StackPanel HorizontalAlignment="Center" Margin="8,0,0,0">
-                                            <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                            <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="150"
                                                     Minimum="0" Maximum="1" SmallChange="0.01"
                                                     Tag="{Binding AccentColor}" Value="{Binding StreamVolume}"/>
                                             <TextBlock Text="{Binding StreamVolume, Converter={StaticResource PercentConverter}}"

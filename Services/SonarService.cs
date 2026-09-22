@@ -263,6 +263,47 @@ public class SonarService : ISonarService
         return results.AsReadOnly();
     }
 
+    public async Task<AudioDevice?> GetSelectedDeviceAsync(
+        AudioDataFlow dataFlow, SonarMix? mix = null, CancellationToken ct = default)
+    {
+        var devices = await GetAudioDevicesAsync(ct);
+        using var doc = await _http.GetAsync("streamRedirections", ct);
+        var redirectionId = mix switch
+        {
+            SonarMix.Personal => "monitoring",
+            SonarMix.Stream => "streaming",
+            _ when dataFlow == AudioDataFlow.Capture => "mic",
+            _ => null
+        };
+
+        if (redirectionId is null)
+            return null;
+
+        foreach (var item in doc.RootElement.EnumerateArray())
+        {
+            if (item.GetProperty("streamRedirectionId").GetString() != redirectionId)
+                continue;
+
+            var deviceId = item.GetProperty("deviceId").GetString();
+            return devices.FirstOrDefault(d => d.DataFlow == dataFlow && d.Id == deviceId);
+        }
+
+        return null;
+    }
+
+    public async Task SetSelectedDeviceAsync(
+        AudioDevice device, SonarMix? mix = null, CancellationToken ct = default)
+    {
+        var scope = mix switch
+        {
+            SonarMix.Personal => "monitoring",
+            SonarMix.Stream => "streaming",
+            _ => "mic"
+        };
+        await _http.PutAsync(
+            $"streamRedirections/{scope}/deviceId/{Uri.EscapeDataString(device.Id)}", ct);
+    }
+
     // ================== Audience Monitoring ==================
 
     public async Task<bool> GetAudienceMonitoringAsync(CancellationToken ct = default)

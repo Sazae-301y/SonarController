@@ -39,33 +39,34 @@ public partial class TrayPopupWindow : Window
     }
 
     /// <summary>タスクトレイアイコン付近（カーソル位置基準）にポップアップを表示する</summary>
-    public async void ShowNearCursor()
+    public void ShowNearCursor()
     {
         if (_isOpening || IsVisible) return;
 
         _isOpening = true;
         var requestId = ++_showRequestId;
-        Opacity = 0;
 
+        // 既存のチャンネル枠を先に表示し、データ取得は表示後に行う
+        Opacity = 1;
+        Show();
+        UpdateLayout();
+        RepositionNearCursor();
+        Activate();
+        _pollTimer.Start();
+
+        _ = LoadAfterShownAsync(requestId);
+    }
+
+    private async Task LoadAfterShownAsync(int requestId)
+    {
         try
         {
-            // SizeToContent のため、一旦画面外に不透明度0で表示してから実サイズで位置決めする
-            Show();
-            UpdateLayout();
-            RepositionNearCursor();
-
             await _viewModel.LoadAsync();
 
-            // 読み込み中に外側クリックで非表示化されていた場合は再表示しない
             if (!IsVisible || requestId != _showRequestId) return;
 
-            // チャンネル一覧の読み込みでサイズが変わるため、確定後に再度位置調整してから表示する
             UpdateLayout();
             RepositionNearCursor();
-            Opacity = 1;
-            Activate();
-
-            _pollTimer.Start();
         }
         finally
         {
