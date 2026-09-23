@@ -3,7 +3,7 @@
 ; Build with: ISCC.exe scripts\Setup.iss (Inno Setup Compiler)
 
 #define MyAppName "SonarController2"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.1.1"
 #define MyAppExeName "SonarController2.exe"
 #define MyPublishDir "..\publish"
 
@@ -20,6 +20,10 @@ OutputBaseFilename=SonarController2-Setup-{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
+; 起動中のEXEを検出したら自動でクローズしてからファイルを上書きする
+CloseApplications=yes
+CloseApplicationsFilter={#MyAppExeName}
+RestartApplications=no
 
 [Languages]
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
