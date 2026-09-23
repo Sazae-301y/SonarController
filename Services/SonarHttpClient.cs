@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Net.Sockets;
 using System.Text.Json;
 
 namespace SonarController2.Services;
@@ -24,11 +25,13 @@ public class SonarHttpClient : IDisposable
     /// </summary>
     public async Task<JsonDocument> GetAsync(string path, CancellationToken ct = default)
     {
-        var url = await BuildUrlAsync(path);
-        var response = await _http.GetAsync(url, ct);
-        response.EnsureSuccessStatusCode();
-        var json = await response.Content.ReadAsStringAsync(ct);
-        return JsonDocument.Parse(json);
+        return await SendWithAddressRefreshAsync(async url =>
+        {
+            using var response = await _http.GetAsync(url, ct);
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync(ct);
+            return JsonDocument.Parse(json);
+        }, path);
     }
 
     /// <summary>
@@ -36,8 +39,7 @@ public class SonarHttpClient : IDisposable
     /// </summary>
     public async Task<string> GetStringAsync(string path, CancellationToken ct = default)
     {
-        var url = await BuildUrlAsync(path);
-        return await _http.GetStringAsync(url, ct);
+        return await SendWithAddressRefreshAsync(url => _http.GetStringAsync(url, ct), path);
     }
 
     /// <summary>
@@ -45,12 +47,44 @@ public class SonarHttpClient : IDisposable
     /// </summary>
     public async Task PutAsync(string path, CancellationToken ct = default)
     {
-        var url = await BuildUrlAsync(path);
-        var content = new StringContent(string.Empty);
-        content.Headers.ContentLength = 0;
-        var response = await _http.PutAsync(url, content, ct);
-        response.EnsureSuccessStatusCode();
+        await SendWithAddressRefreshAsync(async url =>
+        {
+            using var content = new StringContent(string.Empty);
+            content.Headers.ContentLength = 0;
+            using var response = await _http.PutAsync(url, content, ct);
+            response.EnsureSuccessStatusCode();
+            return true;
+        }, path);
     }
+
+    private async Task<T> SendWithAddressRefreshAsync<T>(Func<string, Task<T>> request, string path)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            var url = await BuildUrlAsync(path);
+
+            try
+            {
+                return await request(url);
+            }
+            catch (HttpRequestException ex) when (IsConnectionRefused(ex))
+            {
+                if (attempt > 0)
+                {
+                    throw new SonarNotAvailableException(
+                        "Sonar API に接続できません。SteelSeries GG と Sonar が起動していることを確認してください。", ex);
+                }
+
+                _resolver.InvalidateCache();
+            }
+        }
+    }
+
+    private static bool IsConnectionRefused(HttpRequestException exception)
+        => exception.InnerException is SocketException
+        {
+            SocketErrorCode: SocketError.ConnectionRefused
+        };
 
     private async Task<string> BuildUrlAsync(string path)
     {
@@ -75,4 +109,7 @@ public class SonarHttpClient : IDisposable
 public class SonarNotAvailableException : Exception
 {
     public SonarNotAvailableException(string message) : base(message) { }
+
+    public SonarNotAvailableException(string message, Exception innerException)
+        : base(message, innerException) { }
 }

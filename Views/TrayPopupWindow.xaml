@@ -130,7 +130,11 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#E6181822" CornerRadius="18" BorderBrush="#26FFFFFF" BorderThickness="1">
+        <Border Margin="28"
+            Background="#99181822"
+            CornerRadius="18"
+            BorderBrush="#26FFFFFF"
+            BorderThickness="1">
         <Border.Effect>
             <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="24" ShadowDepth="4"/>
         </Border.Effect>

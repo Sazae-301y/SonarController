@@ -50,7 +50,7 @@ public partial class TrayPopupWindow : Window
         Opacity = 1;
         Show();
         UpdateLayout();
-        RepositionNearCursor();
+        RepositionBottomRight();
         Activate();
         _pollTimer.Start();
 
@@ -66,7 +66,7 @@ public partial class TrayPopupWindow : Window
             if (!IsVisible || requestId != _showRequestId) return;
 
             UpdateLayout();
-            RepositionNearCursor();
+            RepositionBottomRight();
         }
         finally
         {
@@ -74,17 +74,20 @@ public partial class TrayPopupWindow : Window
         }
     }
 
-    private void RepositionNearCursor()
+    private void RepositionBottomRight()
     {
         if (ActualWidth <= 0 || ActualHeight <= 0) return;
 
         var cursor = System.Windows.Forms.Cursor.Position;
-        var workArea = System.Windows.Forms.Screen.FromPoint(cursor).WorkingArea;
+        var screen = System.Windows.Forms.Screen.FromPoint(cursor);
+        var workArea = screen.WorkingArea;
+        var taskbarReserve = workArea.Bottom == screen.Bounds.Bottom ? 48 : 0;
+        const int margin = 8;
 
-        Left = Math.Min(cursor.X, workArea.Right - ActualWidth);
-        Top = Math.Min(cursor.Y, workArea.Bottom - ActualHeight);
-        Left = Math.Max(Left, workArea.Left);
-        Top = Math.Max(Top, workArea.Top);
+        Left = workArea.Right - ActualWidth - margin;
+        Top = workArea.Bottom - ActualHeight - taskbarReserve - margin;
+        Left = Math.Max(Left, workArea.Left + margin);
+        Top = Math.Max(Top, workArea.Top + margin);
     }
 
     public void HidePopup()
