@@ -2,6 +2,7 @@ using System.Threading;
 using System.Windows;
 using H.NotifyIcon;
 using Microsoft.Extensions.DependencyInjection;
+using SonarController2.Helpers;
 using SonarController2.Services;
 using SonarController2.ViewModels;
 using SonarController2.Views;
@@ -19,6 +20,7 @@ public partial class App : Application
     private TaskbarIcon? _trayIcon;
     private TrayPopupWindow? _popupWindow;
     private SettingsWindow? _settingsWindow;
+    private GlobalHotkeyService? _hotkeyService;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -36,6 +38,8 @@ public partial class App : Application
         Services = ConfigureServices();
 
         _popupWindow = new TrayPopupWindow(Services.GetRequiredService<TrayViewModel>());
+        _hotkeyService = Services.GetRequiredService<GlobalHotkeyService>();
+        _hotkeyService.Initialize(_popupWindow, () => _popupWindow.TogglePopup(ignoreRecentDeactivation: true), out _);
         _settingsWindow = new SettingsWindow(Services.GetRequiredService<SettingsViewModel>());
 
         SetupTrayIcon();
@@ -55,6 +59,7 @@ public partial class App : Application
         services.AddSingleton<TrayViewModel>();
         services.AddSingleton<DevicesViewModel>();
         services.AddSingleton<SettingsViewModel>();
+        services.AddSingleton<GlobalHotkeyService>();
 
         return services.BuildServiceProvider();
     }
@@ -70,7 +75,7 @@ public partial class App : Application
 
         var contextMenu = new System.Windows.Controls.ContextMenu();
         var openItem = new System.Windows.Controls.MenuItem { Header = "開く" };
-        openItem.Click += (_, _) => _popupWindow?.ShowNearCursor();
+        openItem.Click += (_, _) => _popupWindow?.ShowPopup();
         var settingsItem = new System.Windows.Controls.MenuItem { Header = "設定" };
         settingsItem.Click += (_, _) => ShowSettingsWindow();
         var exitItem = new System.Windows.Controls.MenuItem { Header = "終了" };
@@ -95,6 +100,7 @@ public partial class App : Application
 
     private void ExitApplication()
     {
+        _hotkeyService?.Dispose();
         _trayIcon?.Dispose();
         // 常駐アプリのため、通常のWindow.Close経由ではなくプロセスを直接終了する
         Environment.Exit(0);

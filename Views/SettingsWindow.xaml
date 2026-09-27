@@ -4,7 +4,8 @@
         Title="SonarController2 - 設定"
         Width="420" Height="480"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize">
+        ResizeMode="CanMinimize"
+        PreviewKeyDown="Window_PreviewKeyDown">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
         <StackPanel>
             <TextBlock Text="一般" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
@@ -14,7 +15,11 @@
             <TextBlock Text="{Binding AppVersion, StringFormat='SonarController2 v{0}'}" Margin="0,0,0,16"/>
 
             <TextBlock Text="ホットキー設定" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
-            <TextBlock Text="（今後実装予定）" Foreground="Gray" Margin="0,0,0,16"/>
+            <DockPanel Margin="0,0,0,4">
+                <Button Content="変更" Click="ChangeHotkey_Click" Padding="12,4" DockPanel.Dock="Right"/>
+                <TextBlock Text="{Binding HotkeyDisplay}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+            </DockPanel>
+            <TextBlock Text="{Binding HotkeyStatus}" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,16"/>
 
             <TextBlock Text="オーディオデバイス" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
             <TextBlock Text="{Binding Devices.ErrorMessage}" Foreground="Red" TextWrapping="Wrap"/>

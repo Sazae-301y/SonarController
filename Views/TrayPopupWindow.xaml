@@ -131,7 +131,7 @@
     </Window.Resources>
 
         <Border Margin="28"
-            Background="#99181822"
+            Background="#CC181822"
             CornerRadius="18"
             BorderBrush="#26FFFFFF"
             BorderThickness="1">

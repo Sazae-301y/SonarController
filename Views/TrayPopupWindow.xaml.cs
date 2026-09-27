@@ -39,7 +39,7 @@ public partial class TrayPopupWindow : Window
     }
 
     /// <summary>タスクトレイアイコン付近（カーソル位置基準）にポップアップを表示する</summary>
-    public void ShowNearCursor()
+    public void ShowPopup()
     {
         if (_isOpening || IsVisible) return;
 
@@ -97,7 +97,7 @@ public partial class TrayPopupWindow : Window
         Hide();
     }
 
-    public void TogglePopup()
+    public void TogglePopup(bool ignoreRecentDeactivation = false)
     {
         if (IsVisible)
         {
@@ -106,10 +106,10 @@ public partial class TrayPopupWindow : Window
         }
 
         // トレイアイコンクリック直後の非アクティブ化で閉じたばかりの場合、同じクリックで再度開かないようにする
-        if ((DateTime.UtcNow - _lastDeactivatedAt) < ReopenSuppressWindow)
+        if (!ignoreRecentDeactivation && (DateTime.UtcNow - _lastDeactivatedAt) < ReopenSuppressWindow)
             return;
 
-        ShowNearCursor();
+        ShowPopup();
     }
 
     private void Window_Deactivated(object sender, EventArgs e)
