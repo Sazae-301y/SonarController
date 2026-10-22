@@ -18,6 +18,7 @@ public partial class App : Application
     public IServiceProvider Services { get; private set; } = null!;
 
     private TaskbarIcon? _trayIcon;
+    private System.IO.Stream? _trayIconStream;
     private TrayPopupWindow? _popupWindow;
     private SettingsWindow? _settingsWindow;
     private GlobalHotkeyService? _hotkeyService;
@@ -37,7 +38,9 @@ public partial class App : Application
 
         Services = ConfigureServices();
 
-        _popupWindow = new TrayPopupWindow(Services.GetRequiredService<TrayViewModel>());
+        _popupWindow = new TrayPopupWindow(
+            Services.GetRequiredService<TrayViewModel>(),
+            Services.GetRequiredService<DisplayPreferenceService>());
         _hotkeyService = Services.GetRequiredService<GlobalHotkeyService>();
         _hotkeyService.Initialize(_popupWindow, () => _popupWindow.TogglePopup(ignoreRecentDeactivation: true), out _);
         _settingsWindow = new SettingsWindow(Services.GetRequiredService<SettingsViewModel>());
@@ -54,6 +57,7 @@ public partial class App : Application
         services.AddSingleton<SonarHttpClient>();
         services.AddSingleton<ISonarService, SonarService>();
         services.AddSingleton<IAudioEndpointVolumeService, AudioEndpointVolumeService>();
+        services.AddSingleton<DisplayPreferenceService>();
 
         // ViewModels（トレイポップアップ・設定ウィンドウとも常駐中は使い回すためSingleton）
         services.AddSingleton<TrayViewModel>();
@@ -66,9 +70,13 @@ public partial class App : Application
 
     private void SetupTrayIcon()
     {
+        var iconResource = GetResourceStream(new Uri("pack://application:,,,/Assets/SonarController2.ico"))
+            ?? throw new InvalidOperationException("The application icon resource could not be loaded.");
+        _trayIconStream = iconResource.Stream;
+
         _trayIcon = new TaskbarIcon
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            Icon = new System.Drawing.Icon(_trayIconStream),
             ToolTipText = "SonarController2",
         };
         _trayIcon.TrayLeftMouseUp += (_, _) => _popupWindow?.TogglePopup();
@@ -102,6 +110,7 @@ public partial class App : Application
     {
         _hotkeyService?.Dispose();
         _trayIcon?.Dispose();
+        _trayIconStream?.Dispose();
         // 常駐アプリのため、通常のWindow.Close経由ではなくプロセスを直接終了する
         Environment.Exit(0);
     }

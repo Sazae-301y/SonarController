@@ -6,6 +6,7 @@
     <RootNamespace>SonarController2</RootNamespace>
     <AssemblyName>SonarController2</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\SonarController2.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
@@ -27,6 +28,10 @@
     <PackageReference Include="H.NotifyIcon.Wpf" Version="2.2.0" />
     <!-- Windows audio endpoint volume control -->
     <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\SonarController2.ico" />
   </ItemGroup>
 
 </Project>

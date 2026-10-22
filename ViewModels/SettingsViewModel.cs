@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SonarController2.Helpers;
@@ -24,23 +25,69 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _hotkeyStatus = string.Empty;
 
+    [ObservableProperty]
+    private DisplayOption? _selectedDisplay;
+
+    [ObservableProperty]
+    private string _displayStatus = string.Empty;
+
     public string AppVersion =>
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
 
     public DevicesViewModel Devices { get; }
+    public ObservableCollection<DisplayOption> DisplayOptions { get; } = [];
 
     private readonly GlobalHotkeyService _hotkeyService;
+    private readonly DisplayPreferenceService _displayPreferenceService;
 
-    public SettingsViewModel(DevicesViewModel devicesViewModel, GlobalHotkeyService hotkeyService)
+    public SettingsViewModel(
+        DevicesViewModel devicesViewModel,
+        GlobalHotkeyService hotkeyService,
+        DisplayPreferenceService displayPreferenceService)
     {
         Devices = devicesViewModel;
         _hotkeyService = hotkeyService;
+        _displayPreferenceService = displayPreferenceService;
         _hotkeyDisplay = hotkeyService.Current.DisplayName;
         _hotkeyStatus = hotkeyService.InitializationError ?? string.Empty;
+
+        RefreshDisplayOptions();
+        _displayStatus = displayPreferenceService.LoadError ?? string.Empty;
 
         _suppressEvents = true;
         IsAutoStartEnabled = AutoStartHelper.IsEnabled();
         _suppressEvents = false;
+    }
+
+    public void RefreshDisplayOptions()
+    {
+        _suppressEvents = true;
+        DisplayOptions.Clear();
+        foreach (var option in _displayPreferenceService.GetDisplayOptions())
+            DisplayOptions.Add(option);
+
+        SelectedDisplay = FindSavedOption();
+        _suppressEvents = false;
+    }
+
+    private DisplayOption? FindSavedOption() =>
+        DisplayOptions.FirstOrDefault(option => option.MonitorId == _displayPreferenceService.PreferredId);
+
+    partial void OnSelectedDisplayChanged(DisplayOption? value)
+    {
+        if (_suppressEvents || value is null) return;
+
+        // 未接続の保存済みディスプレイは設定を保持したまま、そのまま選択状態にしておく
+        if (!value.IsConnected) return;
+
+        if (_displayPreferenceService.TrySetPreferredDisplay(value.MonitorId, out var error))
+        {
+            DisplayStatus = "表示先を保存しました。";
+            return;
+        }
+
+        DisplayStatus = error ?? "表示先を保存できませんでした。";
+        RefreshDisplayOptions();
     }
 
     partial void OnIsAutoStartEnabledChanged(bool value)

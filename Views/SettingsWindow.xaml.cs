@@ -14,6 +14,11 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = _viewModel;
+        // 常駐中にディスプレイが接続・切断されても、開くたびに一覧を最新化する
+        IsVisibleChanged += (_, e) =>
+        {
+            if (e.NewValue is true) _viewModel.RefreshDisplayOptions();
+        };
         Loaded += async (_, _) => await _viewModel.Devices.LoadAsync();
     }
 
