@@ -36,6 +36,7 @@ public partial class SettingsViewModel : ViewModelBase
 
     public DevicesViewModel Devices { get; }
     public ObservableCollection<DisplayOption> DisplayOptions { get; } = [];
+    public InteractionModeService InteractionMode { get; }
 
     private readonly GlobalHotkeyService _hotkeyService;
     private readonly DisplayPreferenceService _displayPreferenceService;
@@ -43,11 +44,13 @@ public partial class SettingsViewModel : ViewModelBase
     public SettingsViewModel(
         DevicesViewModel devicesViewModel,
         GlobalHotkeyService hotkeyService,
-        DisplayPreferenceService displayPreferenceService)
+        DisplayPreferenceService displayPreferenceService,
+        InteractionModeService interactionMode)
     {
         Devices = devicesViewModel;
         _hotkeyService = hotkeyService;
         _displayPreferenceService = displayPreferenceService;
+        InteractionMode = interactionMode;
         _hotkeyDisplay = hotkeyService.Current.DisplayName;
         _hotkeyStatus = hotkeyService.InitializationError ?? string.Empty;
 

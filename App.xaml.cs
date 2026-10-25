@@ -58,6 +58,7 @@ public partial class App : Application
         services.AddSingleton<ISonarService, SonarService>();
         services.AddSingleton<IAudioEndpointVolumeService, AudioEndpointVolumeService>();
         services.AddSingleton<DisplayPreferenceService>();
+        services.AddSingleton<InteractionModeService>();
 
         // ViewModels（トレイポップアップ・設定ウィンドウとも常駐中は使い回すためSingleton）
         services.AddSingleton<TrayViewModel>();

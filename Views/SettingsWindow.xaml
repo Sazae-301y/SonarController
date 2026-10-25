@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SonarController2 - 設定"
         Icon="pack://application:,,,/Assets/SonarController2.ico"
-        Width="500" Height="620"
+        Width="500" Height="680"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         FontSize="14"
@@ -28,6 +28,14 @@
         <StackPanel>
             <TextBlock Text="一般" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
             <CheckBox Content="Windows起動時に自動起動する" IsChecked="{Binding IsAutoStartEnabled}" Margin="0,0,0,16"/>
+
+            <TextBlock Text="操作モード" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
+            <CheckBox Content="タッチ最適化モードを有効にする"
+                      IsChecked="{Binding InteractionMode.IsTouchOptimized}" Margin="0,0,0,4"/>
+            <TextBlock Text="オフにすると、マウス操作向けのコンパクトな表示になります。"
+                       Foreground="Gray" TextWrapping="Wrap" Margin="8,0,0,4"/>
+            <TextBlock Text="{Binding InteractionMode.Status}" Foreground="Gray"
+                       TextWrapping="Wrap" Margin="8,0,0,16"/>
 
             <TextBlock Text="優先して表示するディスプレイ" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
             <ComboBox ItemsSource="{Binding DisplayOptions}"

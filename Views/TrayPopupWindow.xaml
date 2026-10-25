@@ -27,14 +27,21 @@
         </Style>
 
         <Style TargetType="ComboBox">
-            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="MinHeight" Value="34"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="MinHeight" Value="44"/>
+                    <Setter Property="Padding" Value="8,4"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="AudioDeviceItemStyle" TargetType="ComboBoxItem">
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="10,5"/>
             <Setter Property="Foreground" Value="#F0F0F0"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -60,6 +67,13 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="MinHeight" Value="44"/>
+                    <Setter Property="Padding" Value="12,8"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
@@ -127,17 +141,43 @@
         </Style>
 
         <Style TargetType="Button">
-            <Setter Property="MinWidth" Value="44"/>
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="MinWidth" Value="36"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="MinWidth" Value="44"/>
+                    <Setter Property="MinHeight" Value="44"/>
+                    <Setter Property="FontSize" Value="16"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="EndpointVolumeSliderStyle" TargetType="Slider">
+            <Setter Property="Height" Value="32"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="Height" Value="44"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="ChannelColumn" TargetType="Border">
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="8"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-            <Setter Property="Width" Value="116"/>
+            <Setter Property="Padding" Value="7"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="Width" Value="104"/>
             <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="Padding" Value="8"/>
+                    <Setter Property="Margin" Value="0,0,8,0"/>
+                    <Setter Property="Width" Value="116"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <!-- Colorful vertical slider (filled track below thumb, dim track above) -->
@@ -145,7 +185,15 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
-                        <Ellipse Width="32" Height="32" Fill="White" Stroke="#40000000" StrokeThickness="1"/>
+                        <Ellipse x:Name="ThumbEllipse" Width="20" Height="20"
+                                 Fill="White" Stroke="#40000000" StrokeThickness="1"/>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                                         Value="True">
+                                <Setter TargetName="ThumbEllipse" Property="Width" Value="32"/>
+                                <Setter TargetName="ThumbEllipse" Property="Height" Value="32"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -173,10 +221,11 @@
         </Style>
         <Style x:Key="ColorfulVerticalSlider" TargetType="Slider">
             <Setter Property="Orientation" Value="Vertical"/>
+            <Setter Property="Height" Value="150"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
-                        <Track x:Name="PART_Track" Width="40">
+                        <Track x:Name="PART_Track" Width="24">
                             <Track.DecreaseRepeatButton>
                                 <RepeatButton Style="{StaticResource SliderFilledTrackStyle}" Command="Slider.DecreaseLarge"/>
                             </Track.DecreaseRepeatButton>
@@ -184,18 +233,32 @@
                                 <RepeatButton Style="{StaticResource SliderEmptyTrackStyle}" Command="Slider.IncreaseLarge"/>
                             </Track.IncreaseRepeatButton>
                             <Track.Thumb>
-                                <Thumb Style="{StaticResource SliderThumbStyle}" Height="32" Width="40"/>
+                                <Thumb x:Name="PART_Thumb" Style="{StaticResource SliderThumbStyle}" Height="20" Width="24"/>
                             </Track.Thumb>
                         </Track>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                                         Value="True">
+                                <Setter TargetName="PART_Track" Property="Width" Value="40"/>
+                                <Setter TargetName="PART_Thumb" Property="Height" Value="32"/>
+                                <Setter TargetName="PART_Thumb" Property="Width" Value="40"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="Height" Value="190"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <!-- Round toggle buttons (routing / mute) -->
         <Style x:Key="RoutingToggleStyle" TargetType="ToggleButton">
-            <Setter Property="Width" Value="44"/>
-            <Setter Property="Height" Value="44"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -212,14 +275,21 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="Width" Value="44"/>
+                    <Setter Property="Height" Value="44"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
         <Style x:Key="MuteToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource RoutingToggleStyle}">
             <Setter Property="Tag" Value="#E53935"/>
         </Style>
 
         <Style x:Key="PillToggleStyle" TargetType="ToggleButton">
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Padding" Value="8,4"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -235,6 +305,13 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="MinHeight" Value="44"/>
+                    <Setter Property="Padding" Value="12,8"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
@@ -272,7 +349,7 @@
                 <ToggleButton Grid.Column="2" Content="📡 Streamer" Margin="0,0,8,0" FontSize="12"
                               Style="{StaticResource PillToggleStyle}"
                               IsChecked="{Binding IsStreamerMode}"/>
-                <ToggleButton x:Name="PinToggle" Grid.Column="3" Content="📌" Width="44" Height="44" Margin="0,0,8,0"
+                <ToggleButton x:Name="PinToggle" Grid.Column="3" Content="📌" Margin="0,0,8,0"
                               ToolTip="ウィンドウを固定（外をクリックしても閉じない）"/>
                 <Button Grid.Column="4" Content="⚙" Click="SettingsButton_Click"/>
             </Grid>
@@ -301,7 +378,7 @@
                                       DisplayMemberPath="FriendlyName"
                                       Style="{StaticResource ModernComboBoxStyle}"/>
                             <Slider Grid.Column="2" Minimum="0" Maximum="1" SmallChange="0.01"
-                                    IsMoveToPointEnabled="True" Height="44"
+                                    IsMoveToPointEnabled="True" Style="{StaticResource EndpointVolumeSliderStyle}"
                                     Value="{Binding Volume}" VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="3" Text="{Binding Volume, Converter={StaticResource PercentConverter}}"
                                        FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"
@@ -355,7 +432,7 @@
                                     <!-- Classic: single vertical slider + mute -->
                                     <StackPanel HorizontalAlignment="Center"
                                                 Visibility="{Binding IsStreamerMode, Converter={StaticResource InverseBoolToVis}}">
-                                        <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                        <Slider Style="{StaticResource ColorfulVerticalSlider}"
                                                 Minimum="0" Maximum="1" SmallChange="0.01"
                                                 IsMoveToPointEnabled="True" Tag="{Binding AccentColor}"
                                                 Value="{Binding ClassicVolume}"/>
@@ -369,7 +446,7 @@
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                                                 Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}">
                                         <StackPanel HorizontalAlignment="Center">
-                                            <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                            <Slider Style="{StaticResource ColorfulVerticalSlider}"
                                                     Minimum="0" Maximum="1" SmallChange="0.01"
                                                     IsMoveToPointEnabled="True" Tag="{Binding AccentColor}"
                                                     Value="{Binding PersonalVolume}"/>
@@ -379,7 +456,7 @@
                                                           HorizontalAlignment="Center" IsChecked="{Binding PersonalMuted}"/>
                                         </StackPanel>
                                         <StackPanel HorizontalAlignment="Center" Margin="12,0,0,0">
-                                            <Slider Style="{StaticResource ColorfulVerticalSlider}" Height="190"
+                                            <Slider Style="{StaticResource ColorfulVerticalSlider}"
                                                     Minimum="0" Maximum="1" SmallChange="0.01"
                                                     IsMoveToPointEnabled="True" Tag="{Binding AccentColor}"
                                                     Value="{Binding StreamVolume}"/>

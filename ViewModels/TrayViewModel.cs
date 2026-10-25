@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SonarController2.Helpers;
 using SonarController2.Models;
 using SonarController2.Services;
 using System.Collections.ObjectModel;
@@ -25,6 +26,8 @@ public partial class TrayViewModel : ViewModelBase
     private readonly ISonarService _sonar;
     private bool _suppressEvents;
 
+    public InteractionModeService InteractionMode { get; }
+
     [ObservableProperty]
     private bool _isLoading;
 
@@ -41,9 +44,13 @@ public partial class TrayViewModel : ViewModelBase
     public ObservableCollection<ChannelViewModel> Channels { get; } = new();
     public ObservableCollection<DeviceMixViewModel> DeviceMixes { get; } = new();
 
-    public TrayViewModel(ISonarService sonar, IAudioEndpointVolumeService endpointVolume)
+    public TrayViewModel(
+        ISonarService sonar,
+        IAudioEndpointVolumeService endpointVolume,
+        InteractionModeService interactionMode)
     {
         _sonar = sonar;
+        InteractionMode = interactionMode;
 
         foreach (var channel in AllChannels)
             Channels.Add(new ChannelViewModel(_sonar, channel));
