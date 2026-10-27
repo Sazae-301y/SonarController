@@ -138,6 +138,11 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDisconnected}" Value="True">
+                    <Setter Property="BorderBrush" Value="#FF6B6B"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="Button">
@@ -373,10 +378,16 @@
                             <TextBlock Grid.Column="0" Text="{Binding DisplayName}" FontSize="12"
                                        VerticalAlignment="Center"
                                        Foreground="#D7DCE2"/>
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding Devices}"
-                                      SelectedItem="{Binding SelectedDevice}"
-                                      DisplayMemberPath="FriendlyName"
-                                      Style="{StaticResource ModernComboBoxStyle}"/>
+                            <Grid Grid.Column="1">
+                                <ComboBox ItemsSource="{Binding Devices}"
+                                          SelectedItem="{Binding SelectedDevice}"
+                                          DisplayMemberPath="FriendlyName"
+                                          Style="{StaticResource ModernComboBoxStyle}"/>
+                                <TextBlock Text="未接続" Foreground="#FF6B6B"
+                                           Margin="12,0,38,0" VerticalAlignment="Center"
+                                           IsHitTestVisible="False"
+                                           Visibility="{Binding IsDisconnected, Converter={StaticResource BoolToVis}}"/>
+                            </Grid>
                             <Slider Grid.Column="2" Minimum="0" Maximum="1" SmallChange="0.01"
                                     IsMoveToPointEnabled="True" Style="{StaticResource EndpointVolumeSliderStyle}"
                                     Value="{Binding Volume}" VerticalAlignment="Center"/>

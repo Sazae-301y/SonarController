@@ -3,7 +3,7 @@
 ; Build with: ISCC.exe scripts\Setup.iss (Inno Setup Compiler)
 
 #define MyAppName "SonarController2"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.2.2"
 #define MyAppExeName "SonarController2.exe"
 #define MyPublishDir "..\publish"
 

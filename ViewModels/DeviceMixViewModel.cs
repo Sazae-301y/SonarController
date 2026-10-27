@@ -16,6 +16,7 @@ public partial class DeviceMixViewModel : ViewModelBase
 
     public string DisplayName { get; }
     public AudioDataFlow DataFlow => _isInput ? AudioDataFlow.Capture : AudioDataFlow.Render;
+    public bool IsDisconnected => SelectedDevice is null;
     public ObservableCollection<AudioDevice> Devices { get; } = new();
 
     [ObservableProperty]
@@ -40,6 +41,7 @@ public partial class DeviceMixViewModel : ViewModelBase
 
     partial void OnSelectedDeviceChanged(AudioDevice? value)
     {
+        OnPropertyChanged(nameof(IsDisconnected));
         if (_suppressEvents || value is null) return;
         _ = SetDeviceAsync(value);
         _suppressEvents = true;
@@ -60,8 +62,7 @@ public partial class DeviceMixViewModel : ViewModelBase
         foreach (var device in devices.Where(d => d.DataFlow == DataFlow))
             Devices.Add(device);
 
-        SelectedDevice = await _sonar.GetSelectedDeviceAsync(DataFlow, _mix, ct)
-            ?? Devices.FirstOrDefault();
+        SelectedDevice = await _sonar.GetSelectedDeviceAsync(DataFlow, _mix, ct);
         Volume = SelectedDevice is null ? 0.0 : _endpointVolume.GetVolume(SelectedDevice);
         _suppressEvents = false;
     }
