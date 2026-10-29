@@ -6,7 +6,9 @@ namespace SonarController2.Models;
 public record AudioDevice(
     string Id,
     string FriendlyName,
-    AudioDataFlow DataFlow
+    AudioDataFlow DataFlow,
+    bool IsVirtual = false,
+    string Role = ""
 );
 
 public enum AudioDataFlow

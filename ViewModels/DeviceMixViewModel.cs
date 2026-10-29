@@ -55,11 +55,19 @@ public partial class DeviceMixViewModel : ViewModelBase
         SetVolume(Math.Clamp(value, 0.0, 1.0));
     }
 
+    private bool IsSelectable(AudioDevice d)
+    {
+        if (d.DataFlow != DataFlow) return false;
+        if (!d.IsVirtual) return true;
+        // 仮想デバイスは、ストリームミックスの出力先に Sonar Stream のみ許可（マイクと個人ミックスは不可）
+        return !_isInput && _mix == SonarMix.Stream && d.Role == "stream";
+    }
+
     public async Task LoadAsync(IReadOnlyList<AudioDevice> devices, CancellationToken ct = default)
     {
         _suppressEvents = true;
         Devices.Clear();
-        foreach (var device in devices.Where(d => d.DataFlow == DataFlow))
+        foreach (var device in devices.Where(IsSelectable))
             Devices.Add(device);
 
         SelectedDevice = await _sonar.GetSelectedDeviceAsync(DataFlow, _mix, ct);

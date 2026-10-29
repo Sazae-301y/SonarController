@@ -251,12 +251,21 @@ public class SonarService : ISonarService
         foreach (var item in doc.RootElement.EnumerateArray())
         {
             var dataFlowStr = item.GetProperty("dataFlow").GetString();
-            var dataFlow = dataFlowStr == "capture" ? AudioDataFlow.Capture : AudioDataFlow.Render;
+            // 不明な値はRender扱いにせず除外（入出力の取り違え防止）
+            AudioDataFlow dataFlow;
+            if (string.Equals(dataFlowStr, "capture", StringComparison.OrdinalIgnoreCase))
+                dataFlow = AudioDataFlow.Capture;
+            else if (string.Equals(dataFlowStr, "render", StringComparison.OrdinalIgnoreCase))
+                dataFlow = AudioDataFlow.Render;
+            else
+                continue;
 
             results.Add(new AudioDevice(
                 Id:           item.GetProperty("id").GetString()!,
                 FriendlyName: item.GetProperty("friendlyName").GetString()!,
-                DataFlow:     dataFlow
+                DataFlow:     dataFlow,
+                IsVirtual:    item.TryGetProperty("isVad", out var vad) && vad.ValueKind == JsonValueKind.True,
+                Role:         item.TryGetProperty("role", out var role) ? role.GetString() ?? "" : ""
             ));
         }
 
@@ -294,6 +303,11 @@ public class SonarService : ISonarService
     public async Task SetSelectedDeviceAsync(
         AudioDevice device, SonarMix? mix = null, CancellationToken ct = default)
     {
+        // マイク(mix=null)は入力、個人/ストリームミックスは出力デバイスのみ許可
+        var expected = mix is null ? AudioDataFlow.Capture : AudioDataFlow.Render;
+        if (device.DataFlow != expected)
+            throw new ArgumentException("デバイスの種類(入力/出力)が用途と一致しません。", nameof(device));
+
         var scope = mix switch
         {
             SonarMix.Personal => "monitoring",
