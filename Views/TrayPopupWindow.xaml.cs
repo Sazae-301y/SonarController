@@ -1,6 +1,9 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using SonarController2.Helpers;
@@ -19,10 +22,15 @@ public partial class TrayPopupWindow : Window
     private bool _isOpening;
     private bool _isRefreshing;
     private int _showRequestId;
+    private Slider? _lastTouchedSlider;
 
     public TrayPopupWindow(TrayViewModel viewModel, DisplayPreferenceService displayPreferenceService)
     {
         InitializeComponent();
+        // Slider標準のクリック移動処理より先に受けるため、ウィンドウ側のトンネルイベントで処理する
+        AddHandler(UIElement.PreviewMouseLeftButtonDownEvent,
+            new MouseButtonEventHandler(Window_PreviewMouseLeftButtonDown), true);
+        PreviewKeyDown += Window_PreviewKeyDown;
         _viewModel = viewModel;
         _displayPreferenceService = displayPreferenceService;
         DataContext = _viewModel;
@@ -140,6 +148,67 @@ public partial class TrayPopupWindow : Window
     {
         HidePopup();
         ((App)System.Windows.Application.Current).ShowSettingsWindow();
+    }
+
+    // つまみ以外を押した場合は、その位置へ値を移したうえでThumbのドラッグ操作を開始し、
+    // ボタンを離すまでそのまま調整できるようにする。
+    private void Window_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (FindAncestor<Slider>(e.OriginalSource as DependencyObject) is not { } slider)
+            return;
+
+        _lastTouchedSlider = slider;
+
+        if (slider.Template.FindName("PART_Track", slider) is not Track { Thumb: { } thumb } track
+            || thumb.IsMouseOver
+            || thumb.IsDragging)
+        {
+            return;
+        }
+
+        slider.SetCurrentValue(Slider.ValueProperty, track.ValueFromPoint(e.GetPosition(track)));
+        // つまみの位置を更新してからドラッグを始めないと、基準点がずれて値が大きく動く
+        slider.UpdateLayout();
+        thumb.RaiseEvent(new MouseButtonEventArgs(e.MouseDevice, e.Timestamp, MouseButton.Left)
+        {
+            RoutedEvent = UIElement.MouseLeftButtonDownEvent,
+            Source = thumb
+        });
+        e.Handled = true;
+    }
+
+    // 最後に触ったスライダーを矢印キーで1%ずつ調整する（デバイス選択のコンボボックス操作中は除く）
+    private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        var step = e.Key switch
+        {
+            Key.Left or Key.Down => -0.01,
+            Key.Right or Key.Up => 0.01,
+            _ => 0.0
+        };
+
+        if (step == 0.0
+            || _lastTouchedSlider is not { IsVisible: true, IsEnabled: true } slider
+            || FindAncestor<System.Windows.Controls.ComboBox>(Keyboard.FocusedElement as DependencyObject) is not null)
+        {
+            return;
+        }
+
+        slider.SetCurrentValue(Slider.ValueProperty, Math.Round(slider.Value + step, 2));
+        e.Handled = true;
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? element) where T : DependencyObject
+    {
+        while (element is not null)
+        {
+            if (element is T match) return match;
+            element = element is System.Windows.Media.Visual or System.Windows.Media.Media3D.Visual3D
+                ? System.Windows.Media.VisualTreeHelper.GetParent(element)
+                : LogicalTreeHelper.GetParent(element);
+        }
+
+        return null;
     }
 
     private const uint SwpNoSize = 0x0001;

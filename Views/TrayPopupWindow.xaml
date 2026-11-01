@@ -159,16 +159,6 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="EndpointVolumeSliderStyle" TargetType="Slider">
-            <Setter Property="Height" Value="32"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
-                             Value="True">
-                    <Setter Property="Height" Value="44"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
         <Style x:Key="ChannelColumn" TargetType="Border">
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="7"/>
@@ -260,6 +250,65 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Horizontal variant of the colorful slider (device mix volume) -->
+        <Style x:Key="SliderFilledHorizontalTrackStyle" TargetType="RepeatButton">
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Height="12" CornerRadius="6" VerticalAlignment="Center"
+                                Background="{Binding Tag, RelativeSource={RelativeSource AncestorType=Slider}, Converter={StaticResource HexToBrush}}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SliderEmptyHorizontalTrackStyle" TargetType="RepeatButton">
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Height="12" CornerRadius="6" Background="#33FFFFFF" VerticalAlignment="Center"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="EndpointVolumeSliderStyle" TargetType="Slider">
+            <Setter Property="Orientation" Value="Horizontal"/>
+            <Setter Property="Tag" Value="#7C4DFF"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Track x:Name="PART_Track" Height="24">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource SliderFilledHorizontalTrackStyle}" Command="Slider.DecreaseLarge"/>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Style="{StaticResource SliderEmptyHorizontalTrackStyle}" Command="Slider.IncreaseLarge"/>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb x:Name="PART_Thumb" Style="{StaticResource SliderThumbStyle}" Height="24" Width="20"/>
+                            </Track.Thumb>
+                        </Track>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                                         Value="True">
+                                <Setter TargetName="PART_Track" Property="Height" Value="40"/>
+                                <Setter TargetName="PART_Thumb" Property="Height" Value="40"/>
+                                <Setter TargetName="PART_Thumb" Property="Width" Value="32"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="Height" Value="44"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Round toggle buttons (routing / mute) -->
         <Style x:Key="RoutingToggleStyle" TargetType="ToggleButton">
             <Setter Property="Width" Value="28"/>
@@ -292,19 +341,44 @@
             <Setter Property="Tag" Value="#E53935"/>
         </Style>
 
+        <!-- Header pill buttons: shared look for toggles (Audience / Streamer / Pin) and plain buttons (Settings) -->
         <Style x:Key="PillToggleStyle" TargetType="ToggleButton">
             <Setter Property="MinHeight" Value="32"/>
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#F0F0F0"/>
+            <Setter Property="Tag" Value="#00BFA5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="Bg" CornerRadius="12" Background="#33FFFFFF" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
+                        <Grid SnapsToDevicePixels="True">
+                            <Border x:Name="Bg" CornerRadius="12" Background="#26FFFFFF"
+                                    BorderBrush="#26FFFFFF" BorderThickness="1"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border x:Name="Overlay" CornerRadius="12" Background="#1FFFFFFF"
+                                    Opacity="0" IsHitTestVisible="False"/>
+                        </Grid>
                         <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Overlay" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Overlay" Property="Background" Value="#33000000"/>
+                                <Setter TargetName="Overlay" Property="Opacity" Value="1"/>
+                            </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="#00BFA5"/>
+                                <Setter TargetName="Bg" Property="Background"
+                                        Value="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource HexToBrush}}"/>
+                                <Setter TargetName="Bg" Property="BorderBrush"
+                                        Value="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource HexToBrush}}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -314,7 +388,66 @@
                 <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
                              Value="True">
                     <Setter Property="MinHeight" Value="44"/>
-                    <Setter Property="Padding" Value="12,8"/>
+                    <Setter Property="Padding" Value="14,8"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="PillIconToggleStyle" TargetType="ToggleButton" BasedOn="{StaticResource PillToggleStyle}">
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Tag" Value="#7C4DFF"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="MinWidth" Value="44"/>
+                    <Setter Property="Padding" Value="8,8"/>
+                    <Setter Property="FontSize" Value="16"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="PillButtonStyle" TargetType="Button">
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#F0F0F0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid SnapsToDevicePixels="True">
+                            <Border x:Name="Bg" CornerRadius="12" Background="#26FFFFFF"
+                                    BorderBrush="#26FFFFFF" BorderThickness="1"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border x:Name="Overlay" CornerRadius="12" Background="#1FFFFFFF"
+                                    Opacity="0" IsHitTestVisible="False"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Overlay" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Overlay" Property="Background" Value="#33000000"/>
+                                <Setter TargetName="Overlay" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.InteractionMode.IsTouchOptimized, RelativeSource={RelativeSource AncestorType=Window}}"
+                             Value="True">
+                    <Setter Property="MinWidth" Value="44"/>
+                    <Setter Property="MinHeight" Value="44"/>
+                    <Setter Property="Padding" Value="8,8"/>
+                    <Setter Property="FontSize" Value="16"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -333,74 +466,76 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Grid Grid.Row="0" Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="🎚️ Sonar Controller" FontSize="14" FontWeight="Bold"
-                           Foreground="#7C4DFF" VerticalAlignment="Center"/>
-                <CheckBox Grid.Column="1" Content="👥 Audience" Margin="0,0,12,0" Padding="6,8" FontSize="12"
-                          VerticalAlignment="Center"
-                          Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}"
-                          IsChecked="{Binding AudienceMonitoring}"/>
-                <ToggleButton Grid.Column="2" Content="📡 Streamer" Margin="0,0,8,0" FontSize="12"
-                              Style="{StaticResource PillToggleStyle}"
-                              IsChecked="{Binding IsStreamerMode}"/>
-                <ToggleButton x:Name="PinToggle" Grid.Column="3" Content="📌" Margin="0,0,8,0"
-                              ToolTip="ウィンドウを固定（外をクリックしても閉じない）"/>
-                <Button Grid.Column="4" Content="⚙" Click="SettingsButton_Click"/>
-            </Grid>
-
-            <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="#FF6B6B" TextWrapping="Wrap"
+            <TextBlock Grid.Row="0" Text="{Binding ErrorMessage}" Foreground="#FF6B6B" TextWrapping="Wrap"
                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}"
                        Margin="0,0,0,12" MaxWidth="760"/>
 
-            <!-- Device mix controls: selection first, then endpoint volume -->
-            <ItemsControl Grid.Row="2" ItemsSource="{Binding DeviceMixes}"
-                          Margin="0,0,0,12">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="0,3,0,3">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="112"/>
-                                <ColumnDefinition Width="210"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="48"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding DisplayName}" FontSize="12"
-                                       VerticalAlignment="Center"
-                                       Foreground="#D7DCE2"/>
-                            <Grid Grid.Column="1">
-                                <ComboBox ItemsSource="{Binding Devices}"
-                                          SelectedItem="{Binding SelectedDevice}"
-                                          DisplayMemberPath="FriendlyName"
-                                          Style="{StaticResource ModernComboBoxStyle}"/>
-                                <TextBlock Text="未接続" Foreground="#FF6B6B"
-                                           Margin="12,0,38,0" VerticalAlignment="Center"
-                                           IsHitTestVisible="False"
-                                           Visibility="{Binding IsDisconnected, Converter={StaticResource BoolToVis}}"/>
+            <!-- Device mix controls (left) and window buttons (right) -->
+            <Grid Grid.Row="1" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ItemsControl Grid.Column="0" ItemsSource="{Binding DeviceMixes}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,3,0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="112"/>
+                                    <ColumnDefinition Width="210"/>
+                                    <ColumnDefinition Width="*" MinWidth="120"/>
+                                    <ColumnDefinition Width="48"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding DisplayName}" FontSize="12"
+                                           VerticalAlignment="Center"
+                                           Foreground="#D7DCE2"/>
+                                <Grid Grid.Column="1">
+                                    <Grid.RenderTransform>
+                                        <TranslateTransform X="-14"/>
+                                    </Grid.RenderTransform>
+                                    <ComboBox ItemsSource="{Binding Devices}"
+                                              SelectedItem="{Binding SelectedDevice}"
+                                              DisplayMemberPath="FriendlyName"
+                                              Style="{StaticResource ModernComboBoxStyle}"/>
+                                    <TextBlock Text="未接続" Foreground="#FF6B6B"
+                                               Margin="12,0,38,0" VerticalAlignment="Center"
+                                               IsHitTestVisible="False"
+                                               Visibility="{Binding IsDisconnected, Converter={StaticResource BoolToVis}}"/>
+                                </Grid>
+                                <Slider Grid.Column="2" Minimum="0" Maximum="1" SmallChange="0.01"
+                                        IsMoveToPointEnabled="True" Style="{StaticResource EndpointVolumeSliderStyle}"
+                                        Value="{Binding Volume}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Text="{Binding Volume, Converter={StaticResource PercentConverter}}"
+                                           FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                           Foreground="#D7DCE2"/>
                             </Grid>
-                            <Slider Grid.Column="2" Minimum="0" Maximum="1" SmallChange="0.01"
-                                    IsMoveToPointEnabled="True" Style="{StaticResource EndpointVolumeSliderStyle}"
-                                    Value="{Binding Volume}" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="3" Text="{Binding Volume, Converter={StaticResource PercentConverter}}"
-                                       FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                       Foreground="#D7DCE2"/>
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <ToggleButton Content="👥 Audience" Margin="0,0,0,8"
+                                  Style="{StaticResource PillToggleStyle}"
+                                  Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}"
+                                  IsChecked="{Binding AudienceMonitoring}"/>
+                    <ToggleButton Content="📡 Streamer" Margin="0,0,0,8"
+                                  Style="{StaticResource PillToggleStyle}"
+                                  IsChecked="{Binding IsStreamerMode}"/>
+                    <UniformGrid Rows="1">
+                        <ToggleButton x:Name="PinToggle" Content="📌" Margin="0,0,4,0"
+                                      Style="{StaticResource PillIconToggleStyle}"
+                                      ToolTip="ウィンドウを固定（外をクリックしても閉じない）"/>
+                        <Button Content="⚙" Margin="4,0,0,0" Style="{StaticResource PillButtonStyle}"
+                                Click="SettingsButton_Click"/>
+                    </UniformGrid>
+                </StackPanel>
+            </Grid>
 
             <!-- Channel mixer -->
-            <ItemsControl Grid.Row="3" ItemsSource="{Binding Channels}">
+            <ItemsControl Grid.Row="2" ItemsSource="{Binding Channels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal"/>
