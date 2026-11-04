@@ -1,5 +1,6 @@
 using NAudio.CoreAudioApi;
 using SonarController.Models;
+using SonarController.Services.License;
 
 namespace SonarController.Services;
 
@@ -13,6 +14,9 @@ public interface IAudioEndpointVolumeService
 public sealed class AudioEndpointVolumeService : IAudioEndpointVolumeService, IDisposable
 {
     private readonly MMDeviceEnumerator _enumerator = new();
+    private readonly LicenseService _license;
+
+    public AudioEndpointVolumeService(LicenseService license) => _license = license;
 
     public double GetVolume(AudioDevice device)
     {
@@ -22,6 +26,7 @@ public sealed class AudioEndpointVolumeService : IAudioEndpointVolumeService, ID
 
     public void SetVolume(AudioDevice device, double volume)
     {
+        _license.EnsureUsable();
         using var endpoint = GetEndpoint(device);
         endpoint.AudioEndpointVolume.MasterVolumeLevelScalar = (float)Math.Clamp(volume, 0.0, 1.0);
     }

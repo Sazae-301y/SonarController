@@ -15,6 +15,15 @@
     <sys:String x:Key="Display">显示器</sys:String>
     <sys:String x:Key="DisplayDescription">弹出窗口优先显示的屏幕</sys:String>
     <sys:String x:Key="Version">版本信息</sys:String>
+    <sys:String x:Key="LicenseTitle">许可证</sys:String>
+    <sys:String x:Key="LicenseTrial">试用版</sys:String>
+    <sys:String x:Key="LicensePurchased">完整版</sys:String>
+    <sys:String x:Key="LicenseExpired">试用期已结束</sys:String>
+    <sys:String x:Key="LicenseUnavailable">无法获取许可证状态</sys:String>
+    <sys:String x:Key="LicenseTrialDetail">剩余 {0} 天（到期日期：{1}）</sys:String>
+    <sys:String x:Key="LicensePurchasedDetail">所有功能均可使用。</sys:String>
+    <sys:String x:Key="LicenseExpiredDetail">试用期已结束。请考虑购买完整版。</sys:String>
+    <sys:String x:Key="LicenseUnavailableDetail">无法验证许可证状态，请稍后重试。</sys:String>
     <sys:String x:Key="Hotkey">全局快捷键</sys:String>
     <sys:String x:Key="Change">更改</sys:String>
     <sys:String x:Key="Devices">音频设备</sys:String>
@@ -67,5 +76,13 @@
     <sys:String x:Key="HotkeyUnavailable">无法注册此按键，请选择其他按键。（{0}）</sys:String>
     <sys:String x:Key="ErrorPrefix">发生错误：{0}</sys:String>
     <sys:String x:Key="ModeChangeError">无法切换模式：{0}</sys:String>
+    <sys:String x:Key="SonarGgNotRunning">SteelSeries GG 未运行，请启动 GG。</sys:String>
+    <sys:String x:Key="SonarNotReady">GG 正在运行，但 Sonar 不可用。请在 GG 中启用 Sonar。</sys:String>
+    <sys:String x:Key="SonarConnectionLost">与 Sonar 的连接已断开。GG 重启后将自动重新连接。</sys:String>
+    <sys:String x:Key="SonarApiError">Sonar API 返回错误 (HTTP {0})。请检查 GG 版本。</sys:String>
+    <sys:String x:Key="StartupDisabledByUser">已在 Windows“设置 > 应用 > 启动”中关闭，请在那里开启。</sys:String>
+    <sys:String x:Key="StartupDisabledByPolicy">由于组织策略，无法更改开机启动。</sys:String>
+    <sys:String x:Key="StartupFailed">无法更改开机启动设置。</sys:String>
+    <sys:String x:Key="HotkeyConflictTitle">无法注册热键</sys:String>
     <sys:String x:Key="AlreadyRunning">SonarController 已在运行。</sys:String>
 </ResourceDictionary>

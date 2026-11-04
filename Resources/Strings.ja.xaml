@@ -14,6 +14,15 @@
     <sys:String x:Key="Display" xmlns:sys="clr-namespace:System;assembly=System.Runtime">表示先ディスプレイ</sys:String>
     <sys:String x:Key="DisplayDescription" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ポップアップを優先して表示する画面</sys:String>
     <sys:String x:Key="Version" xmlns:sys="clr-namespace:System;assembly=System.Runtime">バージョン情報</sys:String>
+    <sys:String x:Key="LicenseTitle" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ライセンス</sys:String>
+    <sys:String x:Key="LicenseTrial" xmlns:sys="clr-namespace:System;assembly=System.Runtime">体験版</sys:String>
+    <sys:String x:Key="LicensePurchased" xmlns:sys="clr-namespace:System;assembly=System.Runtime">製品版</sys:String>
+    <sys:String x:Key="LicenseExpired" xmlns:sys="clr-namespace:System;assembly=System.Runtime">体験期間終了</sys:String>
+    <sys:String x:Key="LicenseUnavailable" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ライセンスを確認できません</sys:String>
+    <sys:String x:Key="LicenseTrialDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">残り {0} 日（有効期限: {1}）</sys:String>
+    <sys:String x:Key="LicensePurchasedDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">すべての機能を利用できます。</sys:String>
+    <sys:String x:Key="LicenseExpiredDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">体験期間が終了しました。製品版の購入をご検討ください。</sys:String>
+    <sys:String x:Key="LicenseUnavailableDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ライセンス状態を確認できませんでした。時間をおいて再度ご確認ください。</sys:String>
     <sys:String x:Key="Hotkey" xmlns:sys="clr-namespace:System;assembly=System.Runtime">グローバルホットキー</sys:String>
     <sys:String x:Key="Change" xmlns:sys="clr-namespace:System;assembly=System.Runtime">変更</sys:String>
     <sys:String x:Key="Devices" xmlns:sys="clr-namespace:System;assembly=System.Runtime">オーディオデバイス</sys:String>
@@ -66,5 +75,13 @@
     <sys:String x:Key="HotkeyUnavailable" xmlns:sys="clr-namespace:System;assembly=System.Runtime">このキーは登録できませんでした。別のキーを選んでください。({0})</sys:String>
     <sys:String x:Key="ErrorPrefix" xmlns:sys="clr-namespace:System;assembly=System.Runtime">エラーが発生しました: {0}</sys:String>
     <sys:String x:Key="ModeChangeError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">モード切替に失敗しました: {0}</sys:String>
+    <sys:String x:Key="SonarGgNotRunning" xmlns:sys="clr-namespace:System;assembly=System.Runtime">SteelSeries GG が起動していません。GG を起動してください。</sys:String>
+    <sys:String x:Key="SonarNotReady" xmlns:sys="clr-namespace:System;assembly=System.Runtime">GG は起動していますが、Sonar が利用できません。GG で Sonar を有効にしてください。</sys:String>
+    <sys:String x:Key="SonarConnectionLost" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Sonar との接続が切れました。GG の再起動後は自動的に再接続します。</sys:String>
+    <sys:String x:Key="SonarApiError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Sonar API がエラーを返しました (HTTP {0})。GG のバージョンを確認してください。</sys:String>
+    <sys:String x:Key="StartupDisabledByUser" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Windows の「設定 > アプリ > スタートアップ」で無効になっています。そちらで有効にしてください。</sys:String>
+    <sys:String x:Key="StartupDisabledByPolicy" xmlns:sys="clr-namespace:System;assembly=System.Runtime">組織のポリシーにより、自動起動を変更できません。</sys:String>
+    <sys:String x:Key="StartupFailed" xmlns:sys="clr-namespace:System;assembly=System.Runtime">自動起動の設定を変更できませんでした。</sys:String>
+    <sys:String x:Key="HotkeyConflictTitle" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ホットキーを登録できません</sys:String>
     <sys:String x:Key="AlreadyRunning" xmlns:sys="clr-namespace:System;assembly=System.Runtime">SonarControllerは既に起動しています。</sys:String>
 </ResourceDictionary>

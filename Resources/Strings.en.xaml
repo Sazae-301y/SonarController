@@ -15,6 +15,15 @@
     <sys:String x:Key="Display">Display</sys:String>
     <sys:String x:Key="DisplayDescription">Screen used to show the popup</sys:String>
     <sys:String x:Key="Version">Version</sys:String>
+    <sys:String x:Key="LicenseTitle">License</sys:String>
+    <sys:String x:Key="LicenseTrial">Trial</sys:String>
+    <sys:String x:Key="LicensePurchased">Full version</sys:String>
+    <sys:String x:Key="LicenseExpired">Trial expired</sys:String>
+    <sys:String x:Key="LicenseUnavailable">License unavailable</sys:String>
+    <sys:String x:Key="LicenseTrialDetail">Days remaining: {0} (expires: {1})</sys:String>
+    <sys:String x:Key="LicensePurchasedDetail">All features are available.</sys:String>
+    <sys:String x:Key="LicenseExpiredDetail">The trial period has ended. Please consider purchasing the full version.</sys:String>
+    <sys:String x:Key="LicenseUnavailableDetail">The license status could not be verified. Please try again later.</sys:String>
     <sys:String x:Key="Hotkey">Global hotkey</sys:String>
     <sys:String x:Key="Change">Change</sys:String>
     <sys:String x:Key="Devices">Audio devices</sys:String>
@@ -67,5 +76,13 @@
     <sys:String x:Key="HotkeyUnavailable">Could not register this key. Choose another key. ({0})</sys:String>
     <sys:String x:Key="ErrorPrefix">An error occurred: {0}</sys:String>
     <sys:String x:Key="ModeChangeError">Could not change mode: {0}</sys:String>
+    <sys:String x:Key="SonarGgNotRunning">SteelSeries GG is not running. Please start GG.</sys:String>
+    <sys:String x:Key="SonarNotReady">GG is running, but Sonar is not available. Enable Sonar in GG.</sys:String>
+    <sys:String x:Key="SonarConnectionLost">Lost connection to Sonar. It will reconnect automatically after GG restarts.</sys:String>
+    <sys:String x:Key="SonarApiError">The Sonar API returned an error (HTTP {0}). Please check your GG version.</sys:String>
+    <sys:String x:Key="StartupDisabledByUser">Startup is turned off in Windows Settings > Apps > Startup. Turn it on there.</sys:String>
+    <sys:String x:Key="StartupDisabledByPolicy">Startup cannot be changed because of an organization policy.</sys:String>
+    <sys:String x:Key="StartupFailed">Could not change the startup setting.</sys:String>
+    <sys:String x:Key="HotkeyConflictTitle">Could not register the hotkey</sys:String>
     <sys:String x:Key="AlreadyRunning">SonarController is already running.</sys:String>
 </ResourceDictionary>

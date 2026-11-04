@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using SonarController.Helpers;
 using SonarController.Models;
 using SonarController.Services;
+using SonarController.Services.License;
 using System.Collections.ObjectModel;
 
 namespace SonarController.ViewModels;
@@ -25,7 +26,9 @@ public partial class TrayViewModel : ViewModelBase
 
     private readonly ISonarService _sonar;
     private readonly LanguageService _language;
+    private readonly LicenseService _licenseService;
     private bool _suppressEvents;
+    private bool _needsReload;
 
     public InteractionModeService InteractionMode { get; }
 
@@ -34,6 +37,15 @@ public partial class TrayViewModel : ViewModelBase
 
     [ObservableProperty]
     private string? _errorMessage;
+
+    [ObservableProperty]
+    private bool _isLicenseUsable;
+
+    [ObservableProperty]
+    private bool _isLicenseBlocked;
+
+    [ObservableProperty]
+    private string _licenseNoticeText = string.Empty;
 
     [ObservableProperty]
     private bool _isStreamerMode;
@@ -49,11 +61,16 @@ public partial class TrayViewModel : ViewModelBase
         ISonarService sonar,
         IAudioEndpointVolumeService endpointVolume,
         InteractionModeService interactionMode,
-        LanguageService language)
+        LanguageService language,
+        LicenseService licenseService)
     {
         _sonar = sonar;
         _language = language;
+        _licenseService = licenseService;
         InteractionMode = interactionMode;
+        UpdateLicenseStatus(_licenseService.Current);
+        _licenseService.StatusChanged += (_, status) => UpdateLicenseStatus(status);
+        _language.LanguageChanged += (_, _) => UpdateLicenseStatus(_licenseService.Current);
 
         foreach (var channel in AllChannels)
             Channels.Add(new ChannelViewModel(_sonar, channel, language));
@@ -68,9 +85,16 @@ public partial class TrayViewModel : ViewModelBase
     {
         IsLoading = true;
         ErrorMessage = null;
+        _needsReload = false;
 
         try
         {
+            if (!_licenseService.IsUsable)
+            {
+                UpdateLicenseStatus(_licenseService.Current);
+                return;
+            }
+
             var mode = await _sonar.GetModeAsync();
 
             _suppressEvents = true;
@@ -84,13 +108,11 @@ public partial class TrayViewModel : ViewModelBase
 
             await LoadChannelsAsync();
         }
-        catch (SonarNotAvailableException ex)
-        {
-            ErrorMessage = ex.Message;
-        }
         catch (Exception ex)
         {
-            ErrorMessage = string.Format(_language.GetString("ErrorPrefix"), ex.Message);
+            ErrorMessage = SonarErrorMessages.Describe(ex, _language);
+            _needsReload = true;
+            AppLog.Warn($"Failed to load Sonar state: {ex.GetType().Name}");
         }
         finally
         {
@@ -135,6 +157,15 @@ public partial class TrayViewModel : ViewModelBase
     /// </summary>
     public async Task RefreshVolumesAsync()
     {
+        if (!_licenseService.IsUsable) return;
+
+        // 接続エラー後（GGの再起動など）は、Sonarに再接続できた時点で全体を再読込して自動復旧する
+        if (_needsReload)
+        {
+            if (!IsLoading && await _sonar.IsSonarAvailableAsync()) await LoadAsync();
+            return;
+        }
+
         try
         {
             foreach (var vm in Channels)
@@ -152,22 +183,40 @@ public partial class TrayViewModel : ViewModelBase
                 }
             }
         }
+        catch (Exception ex) when (ex is SonarNotAvailableException or SonarApiException)
+        {
+            ErrorMessage = SonarErrorMessages.Describe(ex, _language);
+            _needsReload = true;
+            AppLog.Warn($"Lost connection to Sonar while polling: {ex.GetType().Name}");
+        }
         catch
         {
-            // ポーリング中のエラーはUIに表示せず次回に持ち越す
+            // ポーリング中のその他のエラーはUIに表示せず次回に持ち越す
         }
     }
 
     partial void OnIsStreamerModeChanged(bool value)
     {
-        if (_suppressEvents) return;
+        if (_suppressEvents || !_licenseService.IsUsable) return;
         _ = ApplyModeAsync(value);
     }
 
     partial void OnAudienceMonitoringChanged(bool value)
     {
-        if (_suppressEvents) return;
+        if (_suppressEvents || !_licenseService.IsUsable) return;
         _ = _sonar.SetAudienceMonitoringAsync(value);
+    }
+
+    private void UpdateLicenseStatus(LicenseStatus status)
+    {
+        IsLicenseUsable = _licenseService.IsUsable;
+        IsLicenseBlocked = !IsLicenseUsable;
+        LicenseNoticeText = status.State switch
+        {
+            LicenseState.Expired => _language.GetString("LicenseExpiredDetail"),
+            LicenseState.Unavailable => _language.GetString("LicenseUnavailableDetail"),
+            _ => string.Empty,
+        };
     }
 
     private async Task ApplyModeAsync(bool streamer)

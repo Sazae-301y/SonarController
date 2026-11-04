@@ -19,6 +19,9 @@ public class SonarAddressResolver
     private string? _cachedAddress;
     private bool _launchAttempted;
 
+    /// <summary>直近のアドレス解決に失敗した理由（GG未起動か、Sonar未準備か）。</summary>
+    public SonarErrorKind LastFailure { get; private set; } = SonarErrorKind.GgNotRunning;
+
     /// <summary>
     /// Sonar API のベースURL（例: http://localhost:12268）を取得する
     /// GG が起動していない場合は null を返す
@@ -38,6 +41,13 @@ public class SonarAddressResolver
             TryStartSteelSeriesGg();
         }
 
+        // GG が起動していない（起動もできない）場合は、待たずに結果を返す
+        if (!IsGgRunning())
+        {
+            LastFailure = SonarErrorKind.GgNotRunning;
+            return null;
+        }
+
         var deadline = DateTime.UtcNow + StartupWaitTimeout;
         while (DateTime.UtcNow < deadline)
         {
@@ -48,9 +58,30 @@ public class SonarAddressResolver
                 _cachedAddress = address;
                 return address;
             }
+
+            if (!IsGgRunning())
+            {
+                LastFailure = SonarErrorKind.GgNotRunning;
+                return null;
+            }
         }
 
+        LastFailure = SonarErrorKind.SonarNotReady;
         return null;
+    }
+
+    private static bool IsGgRunning()
+    {
+        var processes = Process.GetProcessesByName("SteelSeriesGG");
+        try
+        {
+            return processes.Length > 0;
+        }
+        finally
+        {
+            foreach (var process in processes)
+                process.Dispose();
+        }
     }
 
     private static async Task<string?> TryResolveAddressAsync()

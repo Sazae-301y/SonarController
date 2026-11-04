@@ -49,13 +49,9 @@ public partial class DevicesViewModel : ViewModelBase
                     InputDevices.Add(d);
             }
         }
-        catch (SonarNotAvailableException ex)
-        {
-            ErrorMessage = ex.Message;
-        }
         catch (Exception ex)
         {
-            ErrorMessage = string.Format(_language.GetString("ErrorPrefix"), ex.Message);
+            ErrorMessage = SonarErrorMessages.Describe(ex, _language);
         }
         finally
         {

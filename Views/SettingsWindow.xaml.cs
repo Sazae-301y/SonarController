@@ -29,7 +29,12 @@ public partial class SettingsWindow : Window
         // 常駐中にディスプレイが接続・切断されても、開くたびに一覧を最新化する
         IsVisibleChanged += (_, e) =>
         {
-            if (e.NewValue is true) _viewModel.RefreshDisplayOptions();
+            if (e.NewValue is true)
+            {
+                _viewModel.RefreshDisplayOptions();
+                _ = _viewModel.RefreshLicenseAsync();
+                _ = _viewModel.RefreshStartupAsync();
+            }
         };
         Loaded += async (_, _) => await _viewModel.Devices.LoadAsync();
     }

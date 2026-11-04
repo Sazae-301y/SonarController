@@ -186,8 +186,20 @@
 
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
+                        <TextBlock Text="{DynamicResource LicenseTitle}" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding LicenseStateText}" Foreground="#453B72"
+                                   FontSize="14" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding LicenseDetailText}" Foreground="#758096"
+                                   FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
                         <TextBlock Text="{DynamicResource General}" Style="{StaticResource SectionTitleStyle}"/>
                         <CheckBox Content="{DynamicResource Startup}" IsChecked="{Binding IsAutoStartEnabled}"/>
+                        <TextBlock Text="{Binding StartupStatus}" Foreground="#B3261E"
+                                   FontSize="12" TextWrapping="Wrap" Margin="28,2,0,0"/>
                         <Separator Margin="0,8" Background="#EDF0F4"/>
                         <TextBlock Text="{DynamicResource Interaction}" FontWeight="SemiBold"
                                    Foreground="#263148" Margin="0,6,0,4"/>

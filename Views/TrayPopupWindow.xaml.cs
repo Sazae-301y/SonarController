@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 using SonarController.Helpers;
 using SonarController.ViewModels;
@@ -90,13 +91,25 @@ public partial class TrayPopupWindow : Window
 
     private void RepositionBottomRight()
     {
+        // 別DPIのモニターへ移るとサイズが変わるため、DPIが変わった場合はもう一度配置し直す
+        var dpiBefore = VisualTreeHelper.GetDpi(this).DpiScaleX;
+        RepositionOnce();
+        UpdateLayout();
+        if (Math.Abs(VisualTreeHelper.GetDpi(this).DpiScaleX - dpiBefore) > 0.001)
+            RepositionOnce();
+    }
+
+    private void RepositionOnce()
+    {
         if (ActualWidth <= 0 || ActualHeight <= 0) return;
 
         var cursor = System.Windows.Forms.Cursor.Position;
         var screen = _displayPreferenceService.GetDisplayForPopup(cursor);
         var workArea = screen.WorkingArea;
-        var taskbarReserve = workArea.Bottom == screen.Bounds.Bottom ? 48 : 0;
-        const int margin = 8;
+        // 物理ピクセルで計算するため、余白はポップアップが載っているモニターのDPIで換算する
+        var dpiScale = VisualTreeHelper.GetDpi(this).DpiScaleY;
+        var taskbarReserve = workArea.Bottom == screen.Bounds.Bottom ? (int)Math.Round(48 * dpiScale) : 0;
+        var margin = (int)Math.Round(8 * dpiScale);
 
         var handle = new WindowInteropHelper(this).Handle;
         if (!GetWindowRect(handle, out var windowRect))

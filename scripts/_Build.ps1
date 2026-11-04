@@ -6,7 +6,7 @@
     into artifacts\ unless -SkipInstaller is given.
 #>
 param(
-    [Parameter(Mandatory)][ValidateSet("Full", "Trial")]
+    [Parameter(Mandatory)][ValidateSet("Full", "Trial", "Store")]
     [string]$Edition,
     [switch]$SkipInstaller
 )
@@ -35,20 +35,24 @@ if (Test-Path $publishDir) {
 # 版を切り替えるとコンパイル定数が変わるため、前回の中間ファイルを破棄する
 dotnet clean $csproj -c Release -r win-x64 -v q | Out-Null
 
+# StoreはMSIX内に展開されるため、単一ファイル化（実行時の自己展開）は使わない
+$singleFile = if ($Edition -eq "Store") { "false" } else { "true" }
+
 dotnet publish $csproj `
     -c Release `
     -r win-x64 `
     --self-contained true `
     -p:LicenseEdition=$Edition `
-    -p:PublishSingleFile=true `
-    -p:IncludeNativeLibrariesForSelfExtract=true `
+    -p:PublishSingleFile=$singleFile `
+    -p:IncludeNativeLibrariesForSelfExtract=$singleFile `
     -o $publishDir
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed (exit code $LASTEXITCODE)"
 }
 Write-Host "exe: $(Join-Path $publishDir 'SonarController.exe')"
 
-if ($SkipInstaller) { return }
+# StoreはInno Setupではなく BuildStore.ps1 でMSIXにする
+if ($SkipInstaller -or $Edition -eq "Store") { return }
 
 Write-Host "=== $Edition $version : installer ===" -ForegroundColor Cyan
 $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source

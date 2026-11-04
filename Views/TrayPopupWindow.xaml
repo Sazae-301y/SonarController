@@ -468,9 +468,12 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="{Binding ErrorMessage}" Foreground="#FF6B6B" TextWrapping="Wrap"
-                       Visibility="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}"
-                       Margin="0,0,0,12" MaxWidth="760"/>
+            <StackPanel Grid.Row="0" Margin="0,0,0,12" MaxWidth="760">
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF6B6B" TextWrapping="Wrap"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}"/>
+                <TextBlock Text="{Binding LicenseNoticeText}" Foreground="#FFD180" TextWrapping="Wrap"
+                           Visibility="{Binding IsLicenseBlocked, Converter={StaticResource BoolToVis}}"/>
+            </StackPanel>
 
             <!-- Device mix controls (left) and window buttons (right) -->
             <Grid Grid.Row="1" Margin="0,0,0,12">
@@ -479,7 +482,8 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <ItemsControl Grid.Column="0" ItemsSource="{Binding DeviceMixes}">
+                <ItemsControl Grid.Column="0" ItemsSource="{Binding DeviceMixes}"
+                              IsEnabled="{Binding IsLicenseUsable}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0,3,0,3">
@@ -519,10 +523,12 @@
                 <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                     <ToggleButton Content="{DynamicResource Audience}" Margin="0,0,0,8"
                                   Style="{StaticResource PillToggleStyle}"
+                                  IsEnabled="{Binding IsLicenseUsable}"
                                   Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}"
                                   IsChecked="{Binding AudienceMonitoring}"/>
                     <ToggleButton Content="{DynamicResource Streamer}" Margin="0,0,0,8"
                                   Style="{StaticResource PillToggleStyle}"
+                                  IsEnabled="{Binding IsLicenseUsable}"
                                   IsChecked="{Binding IsStreamerMode}"/>
                     <UniformGrid Rows="1">
                         <ToggleButton x:Name="PinToggle" Content="📌" Margin="0,0,4,0"
@@ -535,7 +541,8 @@
             </Grid>
 
             <!-- Channel mixer -->
-            <ItemsControl Grid.Row="2" ItemsSource="{Binding Channels}">
+            <ItemsControl Grid.Row="2" ItemsSource="{Binding Channels}"
+                          IsEnabled="{Binding IsLicenseUsable}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal"/>

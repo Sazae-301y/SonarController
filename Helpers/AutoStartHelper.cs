@@ -8,7 +8,14 @@ namespace SonarController.Helpers;
 public static class AutoStartHelper
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    // 版ごとに値名を分け、同時にインストールしても自動起動設定が衝突しないようにする
+#if LICENSE_STORE
+    private const string ValueName = "SonarController.Store";
+#elif LICENSE_TRIAL
+    private const string ValueName = "SonarController.Trial";
+#else
     private const string ValueName = "SonarController";
+#endif
 
     public static bool IsEnabled()
     {

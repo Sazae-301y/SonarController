@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using SonarController.Models;
+using SonarController.Services.License;
 
 namespace SonarController.Services;
 
@@ -12,11 +13,13 @@ public class SonarService : ISonarService
 {
     private readonly SonarHttpClient _http;
     private readonly SonarAddressResolver _resolver;
+    private readonly LicenseService _license;
 
-    public SonarService(SonarHttpClient http, SonarAddressResolver resolver)
+    public SonarService(SonarHttpClient http, SonarAddressResolver resolver, LicenseService license)
     {
         _http = http;
         _resolver = resolver;
+        _license = license;
     }
 
     // ================== Status ==================
@@ -34,6 +37,7 @@ public class SonarService : ISonarService
 
     public async Task SetModeAsync(SonarMode mode, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         // PUT /mode/classic  or  PUT /mode/stream
         var key = mode == SonarMode.Streamer ? "stream" : "classic";
         await _http.PutAsync($"mode/{key}", ct);
@@ -67,6 +71,7 @@ public class SonarService : ISonarService
 
     public async Task SetVolumeAsync(SonarChannel channel, double volume, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         // PUT /volumeSettings/classic/{channel}/Volume/{0.00}
         var vol = volume.ToString("0.00", CultureInfo.InvariantCulture);
         await _http.PutAsync($"volumeSettings/classic/{channel.ToHttpKey()}/Volume/{vol}", ct);
@@ -74,6 +79,7 @@ public class SonarService : ISonarService
 
     public async Task SetMuteAsync(SonarChannel channel, bool muted, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         // PUT /volumeSettings/classic/{channel}/Mute/{true|false}
         var state = muted.ToString().ToLowerInvariant();
         await _http.PutAsync($"volumeSettings/classic/{channel.ToHttpKey()}/Mute/{state}", ct);
@@ -107,6 +113,7 @@ public class SonarService : ISonarService
 
     public async Task SetVolumeAsync(SonarChannel channel, SonarMix mix, double volume, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         // PUT /volumeSettings/streamer/{mix}/{channel}/volume/{0.00}
         var vol = volume.ToString("0.00", CultureInfo.InvariantCulture);
         await _http.PutAsync(
@@ -115,6 +122,7 @@ public class SonarService : ISonarService
 
     public async Task SetMuteAsync(SonarChannel channel, SonarMix mix, bool muted, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         // PUT /volumeSettings/streamer/{mix}/{channel}/isMuted/{true|false}
         var state = muted.ToString().ToLowerInvariant();
         await _http.PutAsync(
@@ -159,6 +167,7 @@ public class SonarService : ISonarService
 
     public async Task SetRoutingAsync(SonarChannel channel, SonarMix mix, bool enabled, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         if (channel == SonarChannel.Master)
             throw new ArgumentException("Master channel has no routing.", nameof(channel));
 
@@ -236,6 +245,7 @@ public class SonarService : ISonarService
 
     public async Task SetEqConfigAsync(string configId, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         // PUT /configs/{configId}/select
         await _http.PutAsync($"configs/{configId}/select", ct);
     }
@@ -303,6 +313,7 @@ public class SonarService : ISonarService
     public async Task SetSelectedDeviceAsync(
         AudioDevice device, SonarMix? mix = null, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         // マイク(mix=null)は入力、個人/ストリームミックスは出力デバイスのみ許可
         var expected = mix is null ? AudioDataFlow.Capture : AudioDataFlow.Render;
         if (device.DataFlow != expected)
@@ -329,6 +340,7 @@ public class SonarService : ISonarService
 
     public async Task SetAudienceMonitoringAsync(bool enabled, CancellationToken ct = default)
     {
+        _license.EnsureUsable();
         // PUT /streamRedirections/isStreamMonitoringEnabled/{true|false}
         await _http.PutAsync(
             $"streamRedirections/isStreamMonitoringEnabled/{enabled.ToString().ToLowerInvariant()}", ct);

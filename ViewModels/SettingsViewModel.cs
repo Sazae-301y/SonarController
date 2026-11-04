@@ -2,6 +2,9 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SonarController.Helpers;
+using SonarController.Models;
+using SonarController.Services;
+using SonarController.Services.License;
 using System.Windows.Input;
 
 namespace SonarController.ViewModels;
@@ -15,6 +18,9 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isAutoStartEnabled;
+
+    [ObservableProperty]
+    private string _startupStatus = string.Empty;
 
     [ObservableProperty]
     private bool _isCapturingHotkey;
@@ -37,6 +43,12 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _languageStatus = string.Empty;
 
+    [ObservableProperty]
+    private string _licenseStateText = string.Empty;
+
+    [ObservableProperty]
+    private string _licenseDetailText = string.Empty;
+
     public string AppVersion =>
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -48,19 +60,26 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly GlobalHotkeyService _hotkeyService;
     private readonly DisplayPreferenceService _displayPreferenceService;
     private readonly LanguageService _language;
+    private readonly LicenseService _licenseService;
+    private readonly IStartupService _startupService;
 
     public SettingsViewModel(
         DevicesViewModel devicesViewModel,
         GlobalHotkeyService hotkeyService,
         DisplayPreferenceService displayPreferenceService,
         InteractionModeService interactionMode,
-        LanguageService language)
+        LanguageService language,
+        LicenseService licenseService,
+        IStartupService startupService)
     {
+        _startupService = startupService;
         Devices = devicesViewModel;
         _hotkeyService = hotkeyService;
         _displayPreferenceService = displayPreferenceService;
         InteractionMode = interactionMode;
         _language = language;
+        _licenseService = licenseService;
+        _licenseService.StatusChanged += (_, status) => UpdateLicenseDisplay(status);
         _selectedLanguage = _language.Languages.First(option => option.Code == _language.CurrentLanguage);
         _languageStatus = _language.LoadError ?? string.Empty;
         _language.LanguageChanged += (_, _) =>
@@ -73,6 +92,7 @@ public partial class SettingsViewModel : ViewModelBase
                 HotkeyStatus = string.Empty;
             if (!string.IsNullOrEmpty(LanguageStatus))
                 LanguageStatus = _language.GetString("LanguageSaved");
+            UpdateLicenseDisplay(_licenseService.Current);
         };
         _hotkeyDisplay = hotkeyService.Current.DisplayName;
         _hotkeyStatus = hotkeyService.InitializationError ?? string.Empty;
@@ -80,9 +100,43 @@ public partial class SettingsViewModel : ViewModelBase
         RefreshDisplayOptions();
         _displayStatus = displayPreferenceService.LoadError ?? string.Empty;
 
+        _ = RefreshStartupAsync();
+    }
+
+    public async Task RefreshStartupAsync()
+    {
+        var enabled = await _startupService.IsEnabledAsync();
         _suppressEvents = true;
-        IsAutoStartEnabled = AutoStartHelper.IsEnabled();
+        IsAutoStartEnabled = enabled;
         _suppressEvents = false;
+    }
+
+    public async Task RefreshLicenseAsync(CancellationToken cancellationToken = default)
+    {
+        var status = await _licenseService.RefreshAsync(cancellationToken);
+        UpdateLicenseDisplay(status);
+    }
+
+    private void UpdateLicenseDisplay(LicenseStatus status)
+    {
+        LicenseStateText = _language.GetString(status.State switch
+        {
+            LicenseState.Trial => "LicenseTrial",
+            LicenseState.Purchased => "LicensePurchased",
+            LicenseState.Expired => "LicenseExpired",
+            _ => "LicenseUnavailable",
+        });
+
+        LicenseDetailText = status.State switch
+        {
+            LicenseState.Trial when status.ExpiresAt is not null =>
+                string.Format(_language.GetString("LicenseTrialDetail"),
+                    status.RemainingDays ?? 0,
+                    status.ExpiresAt.Value.ToLocalTime().ToString("d")),
+            LicenseState.Expired => _language.GetString("LicenseExpiredDetail"),
+            LicenseState.Unavailable => _language.GetString("LicenseUnavailableDetail"),
+            _ => _language.GetString("LicensePurchasedDetail"),
+        };
     }
 
     public void RefreshDisplayOptions()
@@ -133,7 +187,22 @@ public partial class SettingsViewModel : ViewModelBase
     partial void OnIsAutoStartEnabledChanged(bool value)
     {
         if (_suppressEvents) return;
-        AutoStartHelper.SetEnabled(value);
+        _ = ApplyAutoStartAsync(value);
+    }
+
+    private async Task ApplyAutoStartAsync(bool enabled)
+    {
+        var result = await _startupService.SetEnabledAsync(enabled);
+        StartupStatus = result switch
+        {
+            StartupChangeResult.Success => string.Empty,
+            StartupChangeResult.DisabledByUser => _language.GetString("StartupDisabledByUser"),
+            StartupChangeResult.DisabledByPolicy => _language.GetString("StartupDisabledByPolicy"),
+            _ => _language.GetString("StartupFailed"),
+        };
+
+        if (result != StartupChangeResult.Success)
+            await RefreshStartupAsync();
     }
 
     public void BeginHotkeyCapture()
