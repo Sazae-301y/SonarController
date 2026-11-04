@@ -3,20 +3,20 @@
     Microsoft Store edition: publish + MSIX package (artifacts\SonarController-<version>-Store.msix).
 .DESCRIPTION
     Identity / Publisher must match Partner Center (Product management > Product identity).
-    Without them a development identity is used, which is fine for local testing but NOT for Store submission.
+    The defaults match the current SonarController Partner Center identity.
     The Store signs the package itself, so submit the unsigned .msix. Use -DevSign only for local installs.
     Use -DevLicenseMode for a separately named, Debug-only MSIX that grants full local test access.
 .EXAMPLE
-    .\scripts\BuildStore.ps1 -IdentityName "12345Publisher.SonarController" -Publisher "CN=XXXXXXXX-XXXX-..." -PublisherDisplayName "Your Name"
+    .\scripts\BuildStore.ps1
 .EXAMPLE
     .\scripts\BuildStore.ps1 -DevSign    # signed with a self-signed certificate for local testing
     .EXAMPLE
         .\scripts\BuildStore.ps1 -DevLicenseMode # development MSIX with all features enabled
 #>
 param(
-    [string]$IdentityName = "SonarController.Dev",
-    [string]$Publisher = "CN=SonarControllerDev",
-    [string]$PublisherDisplayName = "SonarController Dev",
+    [string]$IdentityName = "KflatWorks.SonarController",
+    [string]$Publisher = "CN=F1CFE6B6-E528-4F3E-853C-C5A5E24DE3BB",
+    [string]$PublisherDisplayName = "Kflat Works",
     [string]$DisplayName = "SonarController",
     [switch]$SkipPublish,
     [switch]$DevSign,
@@ -25,9 +25,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 if ($DevLicenseMode) {
-    if ($IdentityName -ne "SonarController.Dev" -or $Publisher -ne "CN=SonarControllerDev") {
-        throw "DevLicenseMode requires the development identity 'SonarController.Dev' and publisher 'CN=SonarControllerDev'."
-    }
+    $IdentityName = "SonarController.Dev"
+    $Publisher = "CN=SonarControllerDev"
+    $PublisherDisplayName = "SonarController Dev"
 }
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -138,6 +138,6 @@ if ($DevSign -or $DevLicenseMode) {
 
 Remove-Item $stagingDir -Recurse -Force
 Write-Host "msix: $msixPath" -ForegroundColor Green
-if ($IdentityName -eq "SonarController.Dev") {
+if ($edition -eq "StoreDev") {
     Write-Warning "Development identity was used. Pass -IdentityName / -Publisher from Partner Center before submitting to the Store."
 }

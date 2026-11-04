@@ -10,7 +10,22 @@ $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
 $appName = "SonarController"
-$sourceDir = Join-Path $root "bin\Debug\net8.0-windows\win-x64"
+$csproj = Join-Path $root "$appName.csproj"
+[xml]$project = Get-Content -LiteralPath $csproj -Raw
+$targetFramework = $project.Project.PropertyGroup |
+    ForEach-Object { $_.TargetFramework } |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+    Select-Object -First 1
+$runtimeIdentifier = $project.Project.PropertyGroup |
+    ForEach-Object { $_.RuntimeIdentifiers } |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+    Select-Object -First 1
+
+if (-not $targetFramework -or -not $runtimeIdentifier) {
+    throw "SonarController.csproj must define TargetFramework and RuntimeIdentifiers."
+}
+
+$sourceDir = Join-Path $root "bin\Debug\$targetFramework\$runtimeIdentifier"
 $installDir = Join-Path $env:LOCALAPPDATA "Programs\$appName"
 $sourceExePath = Join-Path $sourceDir "$appName.exe"
 $installedExePath = Join-Path $installDir "$appName.exe"
@@ -20,7 +35,7 @@ Start-Sleep -Milliseconds 300
 
 Push-Location $root
 try {
-    dotnet build
+    dotnet build $csproj
     if ($LASTEXITCODE -ne 0) {
         Write-Error "dotnet build failed (exit code $LASTEXITCODE)"
         exit $LASTEXITCODE
