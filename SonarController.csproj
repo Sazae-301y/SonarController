@@ -3,10 +3,11 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
+    <Version>1.3.0</Version>
     <RootNamespace>SonarController</RootNamespace>
     <AssemblyName>SonarController</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\SonarController.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\SonarController-App.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
@@ -31,7 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\SonarController.ico" />
+    <Resource Include="Assets\SonarController-App.ico" />
+    <Resource Include="Assets\SonarController-Tray.ico" />
   </ItemGroup>
 
 </Project>

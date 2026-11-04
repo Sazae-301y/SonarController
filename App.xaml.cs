@@ -27,16 +27,17 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        Services = ConfigureServices();
+        var language = Services.GetRequiredService<LanguageService>();
+
         _singleInstanceMutex = new Mutex(true, "SonarController.SingleInstance", out var isNew);
         if (!isNew)
         {
-            System.Windows.MessageBox.Show("SonarControllerは既に起動しています。", "SonarController",
+            System.Windows.MessageBox.Show(language.GetString("AlreadyRunning"), "SonarController",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;
         }
-
-        Services = ConfigureServices();
 
         _popupWindow = new TrayPopupWindow(
             Services.GetRequiredService<TrayViewModel>(),
@@ -58,6 +59,7 @@ public partial class App : Application
         services.AddSingleton<ISonarService, SonarService>();
         services.AddSingleton<IAudioEndpointVolumeService, AudioEndpointVolumeService>();
         services.AddSingleton<DisplayPreferenceService>();
+        services.AddSingleton<LanguageService>();
         services.AddSingleton<InteractionModeService>();
 
         // ViewModels（トレイポップアップ・設定ウィンドウとも常駐中は使い回すためSingleton）
@@ -71,7 +73,7 @@ public partial class App : Application
 
     private void SetupTrayIcon()
     {
-        var iconResource = GetResourceStream(new Uri("pack://application:,,,/Assets/SonarController.ico"))
+        var iconResource = GetResourceStream(new Uri("pack://application:,,,/Assets/SonarController-Tray.ico"))
             ?? throw new InvalidOperationException("The application icon resource could not be loaded.");
         _trayIconStream = iconResource.Stream;
 
@@ -83,11 +85,14 @@ public partial class App : Application
         _trayIcon.TrayLeftMouseUp += (_, _) => _popupWindow?.TogglePopup();
 
         var contextMenu = new System.Windows.Controls.ContextMenu();
-        var openItem = new System.Windows.Controls.MenuItem { Header = "開く" };
+        var openItem = new System.Windows.Controls.MenuItem();
+        openItem.SetResourceReference(System.Windows.Controls.HeaderedContentControl.HeaderProperty, "Open");
         openItem.Click += (_, _) => _popupWindow?.ShowPopup();
-        var settingsItem = new System.Windows.Controls.MenuItem { Header = "設定" };
+        var settingsItem = new System.Windows.Controls.MenuItem();
+        settingsItem.SetResourceReference(System.Windows.Controls.HeaderedContentControl.HeaderProperty, "SettingsTitle");
         settingsItem.Click += (_, _) => ShowSettingsWindow();
-        var exitItem = new System.Windows.Controls.MenuItem { Header = "終了" };
+        var exitItem = new System.Windows.Controls.MenuItem();
+        exitItem.SetResourceReference(System.Windows.Controls.HeaderedContentControl.HeaderProperty, "Exit");
         exitItem.Click += (_, _) => ExitApplication();
 
         contextMenu.Items.Add(openItem);

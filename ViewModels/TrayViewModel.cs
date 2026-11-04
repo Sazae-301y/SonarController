@@ -24,6 +24,7 @@ public partial class TrayViewModel : ViewModelBase
     };
 
     private readonly ISonarService _sonar;
+    private readonly LanguageService _language;
     private bool _suppressEvents;
 
     public InteractionModeService InteractionMode { get; }
@@ -47,17 +48,19 @@ public partial class TrayViewModel : ViewModelBase
     public TrayViewModel(
         ISonarService sonar,
         IAudioEndpointVolumeService endpointVolume,
-        InteractionModeService interactionMode)
+        InteractionModeService interactionMode,
+        LanguageService language)
     {
         _sonar = sonar;
+        _language = language;
         InteractionMode = interactionMode;
 
         foreach (var channel in AllChannels)
-            Channels.Add(new ChannelViewModel(_sonar, channel));
+            Channels.Add(new ChannelViewModel(_sonar, channel, language));
 
-        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "個人ミックス", SonarMix.Personal, isInput: false));
-        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "ストリームミックス", SonarMix.Stream, isInput: false));
-        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "マイクの入力", mix: null, isInput: true));
+        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "PersonalMix", SonarMix.Personal, isInput: false, language: language));
+        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "StreamMix", SonarMix.Stream, isInput: false, language: language));
+        DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "MicrophoneInput", mix: null, isInput: true, language: language));
     }
 
     [RelayCommand]
@@ -87,7 +90,7 @@ public partial class TrayViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"エラーが発生しました: {ex.Message}";
+            ErrorMessage = string.Format(_language.GetString("ErrorPrefix"), ex.Message);
         }
         finally
         {
@@ -177,7 +180,7 @@ public partial class TrayViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"モード切替失敗: {ex.Message}";
+            ErrorMessage = string.Format(_language.GetString("ModeChangeError"), ex.Message);
         }
     }
 }

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:helpers="clr-namespace:SonarController.Helpers"
         Title="SonarController"
-        Icon="pack://application:,,,/Assets/SonarController.ico"
+        Icon="pack://application:,,,/Assets/SonarController-App.ico"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="Manual"
         Left="-10000" Top="-10000"
@@ -500,7 +500,7 @@
                                               SelectedItem="{Binding SelectedDevice}"
                                               DisplayMemberPath="FriendlyName"
                                               Style="{StaticResource ModernComboBoxStyle}"/>
-                                    <TextBlock Text="未接続" Foreground="#FF6B6B"
+                                    <TextBlock Text="{DynamicResource Unconnected}" Foreground="#FF6B6B"
                                                Margin="12,0,38,0" VerticalAlignment="Center"
                                                IsHitTestVisible="False"
                                                Visibility="{Binding IsDisconnected, Converter={StaticResource BoolToVis}}"/>
@@ -517,17 +517,17 @@
                 </ItemsControl>
 
                 <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                    <ToggleButton Content="👥 Audience" Margin="0,0,0,8"
+                    <ToggleButton Content="{DynamicResource Audience}" Margin="0,0,0,8"
                                   Style="{StaticResource PillToggleStyle}"
                                   Visibility="{Binding IsStreamerMode, Converter={StaticResource BoolToVis}}"
                                   IsChecked="{Binding AudienceMonitoring}"/>
-                    <ToggleButton Content="📡 Streamer" Margin="0,0,0,8"
+                    <ToggleButton Content="{DynamicResource Streamer}" Margin="0,0,0,8"
                                   Style="{StaticResource PillToggleStyle}"
                                   IsChecked="{Binding IsStreamerMode}"/>
                     <UniformGrid Rows="1">
                         <ToggleButton x:Name="PinToggle" Content="📌" Margin="0,0,4,0"
                                       Style="{StaticResource PillIconToggleStyle}"
-                                      ToolTip="ウィンドウを固定（外をクリックしても閉じない）"/>
+                                      ToolTip="{DynamicResource PinTooltip}"/>
                         <Button Content="⚙" Margin="4,0,0,0" Style="{StaticResource PillButtonStyle}"
                                 Click="SettingsButton_Click"/>
                     </UniformGrid>
@@ -569,9 +569,9 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </StackPanel.Style>
-                                        <ToggleButton Style="{StaticResource RoutingToggleStyle}" Content="🎧" ToolTip="Personalミックスへルーティング"
+                                        <ToggleButton Style="{StaticResource RoutingToggleStyle}" Content="🎧" ToolTip="{DynamicResource PersonalRouting}"
                                                       Tag="{Binding AccentColor}" IsChecked="{Binding PersonalRouted}"/>
-                                        <ToggleButton Style="{StaticResource RoutingToggleStyle}" Content="📡" ToolTip="Streamミックスへルーティング"
+                                        <ToggleButton Style="{StaticResource RoutingToggleStyle}" Content="📡" ToolTip="{DynamicResource StreamRouting}"
                                                       Tag="{Binding AccentColor}" Margin="10,0,0,0" IsChecked="{Binding StreamRouted}"/>
                                     </StackPanel>
 
@@ -584,7 +584,7 @@
                                                 Value="{Binding ClassicVolume}"/>
                                         <TextBlock Text="{Binding ClassicVolume, Converter={StaticResource PercentConverter}}"
                                                    FontSize="12" HorizontalAlignment="Center" Margin="0,8,0,8"/>
-                                        <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="Mute"
+                                        <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="{DynamicResource Mute}"
                                                       HorizontalAlignment="Center" IsChecked="{Binding ClassicMuted}"/>
                                     </StackPanel>
 
@@ -598,7 +598,7 @@
                                                     Value="{Binding PersonalVolume}"/>
                                             <TextBlock Text="{Binding PersonalVolume, Converter={StaticResource PercentConverter}}"
                                                        FontSize="12" HorizontalAlignment="Center" Margin="0,8,0,8"/>
-                                            <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="Personal Mute"
+                                            <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="{DynamicResource PersonalMute}"
                                                           HorizontalAlignment="Center" IsChecked="{Binding PersonalMuted}"/>
                                         </StackPanel>
                                         <StackPanel HorizontalAlignment="Center" Margin="12,0,0,0">
@@ -608,7 +608,7 @@
                                                     Value="{Binding StreamVolume}"/>
                                             <TextBlock Text="{Binding StreamVolume, Converter={StaticResource PercentConverter}}"
                                                        FontSize="12" HorizontalAlignment="Center" Margin="0,8,0,8"/>
-                                            <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="Stream Mute"
+                                            <ToggleButton Style="{StaticResource MuteToggleStyle}" Content="🔇" ToolTip="{DynamicResource StreamMute}"
                                                           HorizontalAlignment="Center" IsChecked="{Binding StreamMuted}"/>
                                         </StackPanel>
                                     </StackPanel>

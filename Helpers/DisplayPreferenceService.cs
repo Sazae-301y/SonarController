@@ -19,14 +19,16 @@ public sealed class DisplayPreferenceService
 
     private string? _preferredId;
     private string? _preferredName;
+    private readonly LanguageService _language;
     // 旧バージョンが保存した \\.\DISPLAYn 形式。再起動で番号が変わり得るため、接続確認できた時点でIDへ移行する
     private string? _legacyDeviceName;
 
     public string? PreferredId => _preferredId;
     public string? LoadError { get; }
 
-    public DisplayPreferenceService()
+    public DisplayPreferenceService(LanguageService language)
     {
+        _language = language;
         if (!File.Exists(SettingsPath)) return;
 
         try
@@ -38,7 +40,7 @@ public sealed class DisplayPreferenceService
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
-            LoadError = $"表示先の設定を読み込めませんでした: {exception.Message}";
+            LoadError = string.Format(_language.GetString("DisplayLoadError"), exception.Message);
         }
     }
 
@@ -47,12 +49,13 @@ public sealed class DisplayPreferenceService
         var monitors = GetMonitors();
         MigrateLegacy(monitors);
 
-        var options = new List<DisplayOption> { new(null, "カーソルのあるディスプレイ") };
+        var options = new List<DisplayOption> { new(null, _language.GetString("DisplayCursor")) };
         options.AddRange(monitors.Select(monitor => new DisplayOption(monitor.Id, monitor.Name)));
 
         // 保存済みのディスプレイが未接続でも設定は保持し、選択肢として残す
         if (_preferredId is not null && monitors.All(monitor => monitor.Id != _preferredId))
-            options.Add(new DisplayOption(_preferredId, $"{_preferredName ?? "保存済みのディスプレイ"}（未接続）", false));
+            options.Add(new DisplayOption(_preferredId,
+                $"{_preferredName ?? _language.GetString("DisplaySaved")} ({_language.GetString("DisplayDisconnected")})", false));
 
         return options;
     }
@@ -77,7 +80,7 @@ public sealed class DisplayPreferenceService
             var monitor = GetMonitors().FirstOrDefault(m => m.Id == monitorId);
             if (monitor is null)
             {
-                error = "選択したディスプレイは現在接続されていません。";
+                error = _language.GetString("DisplayNotConnectedError");
                 return false;
             }
 
@@ -106,7 +109,7 @@ public sealed class DisplayPreferenceService
         TrySave(_preferredId, _preferredName, out _);
     }
 
-    private static bool TrySave(string? monitorId, string? displayName, out string? error)
+    private bool TrySave(string? monitorId, string? displayName, out string? error)
     {
         try
         {
@@ -122,12 +125,12 @@ public sealed class DisplayPreferenceService
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            error = $"表示先の設定を保存できませんでした: {exception.Message}";
+            error = string.Format(_language.GetString("DisplaySaveError"), exception.Message);
             return false;
         }
     }
 
-    private static IReadOnlyList<MonitorInfo> GetMonitors()
+    private IReadOnlyList<MonitorInfo> GetMonitors()
     {
         var details = DisplayConfigNative.GetMonitorDetails();
 
@@ -140,7 +143,9 @@ public sealed class DisplayPreferenceService
         {
             details.TryGetValue(screen.DeviceName, out var detail);
             var id = string.IsNullOrEmpty(detail.DevicePath) ? screen.DeviceName : detail.DevicePath;
-            var model = string.IsNullOrWhiteSpace(detail.FriendlyName) ? "ディスプレイ" : detail.FriendlyName;
+            var model = string.IsNullOrWhiteSpace(detail.FriendlyName)
+                ? _language.GetString("DisplayDevice")
+                : detail.FriendlyName;
             return (Screen: screen, Id: id, Model: model);
         }).ToArray();
 
@@ -152,7 +157,7 @@ public sealed class DisplayPreferenceService
                 : monitor.Model;
             var bounds = monitor.Screen.Bounds;
             name += $" ({bounds.Width}×{bounds.Height})";
-            if (monitor.Screen.Primary) name += " ・メイン";
+            if (monitor.Screen.Primary) name += $" ({_language.GetString("DisplayMain")})";
             return new MonitorInfo(monitor.Screen, monitor.Id, name);
         }).ToArray();
     }

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SonarController.Helpers;
 using SonarController.Models;
 using SonarController.Services;
 using System.Collections.ObjectModel;
@@ -12,6 +13,7 @@ namespace SonarController.ViewModels;
 public partial class DevicesViewModel : ViewModelBase
 {
     private readonly ISonarService _sonar;
+    private readonly LanguageService _language;
 
     [ObservableProperty]
     private bool _isLoading;
@@ -22,9 +24,10 @@ public partial class DevicesViewModel : ViewModelBase
     public ObservableCollection<AudioDevice> OutputDevices { get; } = new();
     public ObservableCollection<AudioDevice> InputDevices { get; } = new();
 
-    public DevicesViewModel(ISonarService sonar)
+    public DevicesViewModel(ISonarService sonar, LanguageService language)
     {
         _sonar = sonar;
+        _language = language;
     }
 
     [RelayCommand]
@@ -52,7 +55,7 @@ public partial class DevicesViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"エラーが発生しました: {ex.Message}";
+            ErrorMessage = string.Format(_language.GetString("ErrorPrefix"), ex.Message);
         }
         finally
         {

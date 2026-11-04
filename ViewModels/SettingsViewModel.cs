@@ -31,26 +31,49 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _displayStatus = string.Empty;
 
+    [ObservableProperty]
+    private LanguageOption? _selectedLanguage;
+
+    [ObservableProperty]
+    private string _languageStatus = string.Empty;
+
     public string AppVersion =>
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
 
+    public IReadOnlyList<LanguageOption> LanguageOptions => _language.Languages;
     public DevicesViewModel Devices { get; }
     public ObservableCollection<DisplayOption> DisplayOptions { get; } = [];
     public InteractionModeService InteractionMode { get; }
 
     private readonly GlobalHotkeyService _hotkeyService;
     private readonly DisplayPreferenceService _displayPreferenceService;
+    private readonly LanguageService _language;
 
     public SettingsViewModel(
         DevicesViewModel devicesViewModel,
         GlobalHotkeyService hotkeyService,
         DisplayPreferenceService displayPreferenceService,
-        InteractionModeService interactionMode)
+        InteractionModeService interactionMode,
+        LanguageService language)
     {
         Devices = devicesViewModel;
         _hotkeyService = hotkeyService;
         _displayPreferenceService = displayPreferenceService;
         InteractionMode = interactionMode;
+        _language = language;
+        _selectedLanguage = _language.Languages.First(option => option.Code == _language.CurrentLanguage);
+        _languageStatus = _language.LoadError ?? string.Empty;
+        _language.LanguageChanged += (_, _) =>
+        {
+            RefreshDisplayOptions();
+            DisplayStatus = string.Empty;
+            if (IsCapturingHotkey)
+                HotkeyStatus = _language.GetString("HotkeyCapture");
+            else if (!string.IsNullOrEmpty(HotkeyStatus))
+                HotkeyStatus = string.Empty;
+            if (!string.IsNullOrEmpty(LanguageStatus))
+                LanguageStatus = _language.GetString("LanguageSaved");
+        };
         _hotkeyDisplay = hotkeyService.Current.DisplayName;
         _hotkeyStatus = hotkeyService.InitializationError ?? string.Empty;
 
@@ -85,12 +108,26 @@ public partial class SettingsViewModel : ViewModelBase
 
         if (_displayPreferenceService.TrySetPreferredDisplay(value.MonitorId, out var error))
         {
-            DisplayStatus = "表示先を保存しました。";
+            DisplayStatus = _language.GetString("DisplaySavedStatus");
             return;
         }
 
-        DisplayStatus = error ?? "表示先を保存できませんでした。";
+        DisplayStatus = error ?? _language.GetString("DisplayNotSaved");
         RefreshDisplayOptions();
+    }
+
+    partial void OnSelectedLanguageChanged(LanguageOption? value)
+    {
+        if (value is null || value.Code == _language.CurrentLanguage) return;
+
+        if (_language.TrySetLanguage(value.Code, out var error))
+        {
+            LanguageStatus = _language.GetString("LanguageSaved");
+            return;
+        }
+
+        SelectedLanguage = _language.Languages.First(option => option.Code == _language.CurrentLanguage);
+        LanguageStatus = error ?? _language.GetString("LanguageInvalid");
     }
 
     partial void OnIsAutoStartEnabledChanged(bool value)
@@ -105,7 +142,7 @@ public partial class SettingsViewModel : ViewModelBase
 
         _hotkeyService.Suspend();
         IsCapturingHotkey = true;
-        HotkeyStatus = "キーまたはキーの組み合わせを押してください（Escでキャンセル）";
+        HotkeyStatus = _language.GetString("HotkeyCapture");
     }
 
     public void CancelHotkeyCapture()
@@ -133,10 +170,10 @@ public partial class SettingsViewModel : ViewModelBase
         {
             HotkeyDisplay = _hotkeyService.Current.DisplayName;
             IsCapturingHotkey = false;
-            HotkeyStatus = "ホットキーを保存しました。";
+            HotkeyStatus = _language.GetString("HotkeySaved");
             return;
         }
 
-        HotkeyStatus = error ?? "ホットキーを設定できませんでした。";
+        HotkeyStatus = error ?? _language.GetString("HotkeySaveError");
     }
 }

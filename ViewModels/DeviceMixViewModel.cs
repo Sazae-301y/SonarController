@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using SonarController.Helpers;
 using SonarController.Models;
 using SonarController.Services;
 using System.Collections.ObjectModel;
@@ -12,9 +13,11 @@ public partial class DeviceMixViewModel : ViewModelBase
     private readonly IAudioEndpointVolumeService _endpointVolume;
     private readonly SonarMix? _mix;
     private readonly bool _isInput;
+    private readonly LanguageService _language;
+    private readonly string _displayNameKey;
     private bool _suppressEvents;
 
-    public string DisplayName { get; }
+    public string DisplayName => _language.GetString(_displayNameKey);
     public AudioDataFlow DataFlow => _isInput ? AudioDataFlow.Capture : AudioDataFlow.Render;
     public bool IsDisconnected => SelectedDevice is null;
     public ObservableCollection<AudioDevice> Devices { get; } = new();
@@ -28,15 +31,18 @@ public partial class DeviceMixViewModel : ViewModelBase
     public DeviceMixViewModel(
         ISonarService sonar,
         IAudioEndpointVolumeService endpointVolume,
-        string displayName,
+        string displayNameKey,
         SonarMix? mix,
-        bool isInput)
+        bool isInput,
+        LanguageService language)
     {
         _sonar = sonar;
         _endpointVolume = endpointVolume;
-        DisplayName = displayName;
+        _displayNameKey = displayNameKey;
         _mix = mix;
         _isInput = isInput;
+        _language = language;
+        _language.LanguageChanged += (_, _) => OnPropertyChanged(nameof(DisplayName));
     }
 
     partial void OnSelectedDeviceChanged(AudioDevice? value)

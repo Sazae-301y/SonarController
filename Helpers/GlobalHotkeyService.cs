@@ -39,10 +39,16 @@ public sealed class GlobalHotkeyService : IDisposable
     private Action? _onHotkey;
     private bool _isRegistered;
     private bool _isSuspended;
+    private readonly LanguageService _language;
     private HotkeyBinding _current = LoadBinding();
 
     public HotkeyBinding Current => _current;
     public string? InitializationError { get; private set; }
+
+    public GlobalHotkeyService(LanguageService language)
+    {
+        _language = language;
+    }
 
     public bool Initialize(Window window, Action onHotkey, out string? error)
     {
@@ -50,7 +56,7 @@ public sealed class GlobalHotkeyService : IDisposable
         _source = HwndSource.FromHwnd(handle);
         if (_source is null)
         {
-            error = "ホットキーを初期化できませんでした。";
+            error = _language.GetString("HotkeyInitError");
             InitializationError = error;
             return false;
         }
@@ -66,13 +72,13 @@ public sealed class GlobalHotkeyService : IDisposable
     {
         if (_source is null)
         {
-            error = "ホットキーが初期化されていません。";
+            error = _language.GetString("HotkeyNotInitialized");
             return false;
         }
 
         if (binding.Key == Key.None)
         {
-            error = "キーを指定してください。";
+            error = _language.GetString("HotkeyMissingKey");
             return false;
         }
 
@@ -99,7 +105,7 @@ public sealed class GlobalHotkeyService : IDisposable
             UnregisterHotKey(_source.Handle, HotkeyId);
             if (!_isSuspended)
                 _isRegistered = Register(previous, out _);
-            error = $"設定を保存できませんでした: {exception.Message}";
+            error = string.Format(_language.GetString("HotkeyPersistenceError"), exception.Message);
             return false;
         }
 
@@ -140,7 +146,7 @@ public sealed class GlobalHotkeyService : IDisposable
         }
 
         var exception = new Win32Exception(Marshal.GetLastWin32Error());
-        error = $"このキーは登録できませんでした。別のキーを選んでください。({exception.Message})";
+        error = string.Format(_language.GetString("HotkeyUnavailable"), exception.Message);
         return false;
     }
 

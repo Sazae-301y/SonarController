@@ -10,7 +10,19 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $publishScript = Join-Path $PSScriptRoot "Publish.ps1"
 $setupScript = Join-Path $PSScriptRoot "Setup.iss"
-$installerPath = Join-Path $root "artifacts\SonarController-Setup-1.0.0.exe"
+$csproj = Join-Path $root "SonarController.csproj"
+
+[xml]$project = Get-Content -LiteralPath $csproj -Raw
+$version = $project.Project.PropertyGroup |
+    ForEach-Object { $_.Version } |
+    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+    Select-Object -First 1
+
+if ($version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$') {
+    throw "SonarController.csproj must define a valid semantic <Version> (for example 1.3.0)."
+}
+
+$installerPath = Join-Path $root "artifacts\SonarController-Setup-$version.exe"
 
 $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
 if (-not $iscc) {
@@ -36,7 +48,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Step 2/2: Building installer..."
-& $iscc $setupScript
+& $iscc "/DMyAppVersion=$version" $setupScript
 if ($LASTEXITCODE -ne 0) {
     throw "Setup.iss compilation failed (exit code $LASTEXITCODE)"
 }

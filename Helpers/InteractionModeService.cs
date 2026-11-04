@@ -12,6 +12,9 @@ public sealed partial class InteractionModeService : ObservableObject
         "interaction-settings.json");
 
     private bool _isLoading;
+    private readonly LanguageService _language;
+    private string? _statusKey;
+    private string? _statusDetail;
 
     [ObservableProperty]
     private bool _isTouchOptimized;
@@ -19,8 +22,10 @@ public sealed partial class InteractionModeService : ObservableObject
     [ObservableProperty]
     private string _status = string.Empty;
 
-    public InteractionModeService()
+    public InteractionModeService(LanguageService language)
     {
+        _language = language;
+        _language.LanguageChanged += (_, _) => UpdateStatus();
         if (!File.Exists(SettingsPath)) return;
 
         try
@@ -33,7 +38,7 @@ public sealed partial class InteractionModeService : ObservableObject
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
             _isLoading = false;
-            Status = $"操作モードの設定を読み込めませんでした: {exception.Message}";
+            SetStatus("TouchLoadError", exception.Message);
         }
     }
 
@@ -46,16 +51,30 @@ public sealed partial class InteractionModeService : ObservableObject
             Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
             var json = JsonSerializer.Serialize(new InteractionSettings(value));
             File.WriteAllText(SettingsPath, json);
-            Status = "操作モードを保存しました。";
+            SetStatus("TouchSaved");
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             _isLoading = true;
             IsTouchOptimized = !value;
             _isLoading = false;
-            Status = $"操作モードを保存できませんでした: {exception.Message}";
+            SetStatus("TouchSaveError", exception.Message);
         }
     }
+
+    private void SetStatus(string key, string? detail = null)
+    {
+        _statusKey = key;
+        _statusDetail = detail;
+        UpdateStatus();
+    }
+
+    private void UpdateStatus() =>
+        Status = _statusKey is null
+            ? string.Empty
+            : _statusDetail is null
+                ? _language.GetString(_statusKey)
+                : string.Format(_language.GetString(_statusKey), _statusDetail);
 
     private sealed record InteractionSettings(bool IsTouchOptimized);
 }

@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using SonarController.Models;
 using SonarController.Services;
+using SonarController.Helpers;
 using System.Collections.ObjectModel;
 
 namespace SonarController.ViewModels;
@@ -12,6 +13,7 @@ namespace SonarController.ViewModels;
 public partial class ChannelViewModel : ViewModelBase
 {
     private readonly ISonarService _sonar;
+    private readonly LanguageService _language;
     private readonly SemaphoreSlim _volumeWriteGate = new(1, 1);
     private bool _suppressEvents;
     private CancellationTokenSource? _classicVolumeWrite;
@@ -25,7 +27,7 @@ public partial class ChannelViewModel : ViewModelBase
     private DateTime _streamVolumeChangedAt = DateTime.MinValue;
 
     public SonarChannel Channel { get; }
-    public string DisplayName => Channel.ToDisplayName();
+    public string DisplayName => _language.GetString(Channel.ToString());
     public bool HasEq => Channel != SonarChannel.Master;
     public bool HasRouting => Channel != SonarChannel.Master;
 
@@ -88,10 +90,12 @@ public partial class ChannelViewModel : ViewModelBase
 
     public ObservableCollection<EqConfig> EqConfigs { get; } = new();
 
-    public ChannelViewModel(ISonarService sonar, SonarChannel channel)
+    public ChannelViewModel(ISonarService sonar, SonarChannel channel, LanguageService language)
     {
         _sonar = sonar;
         Channel = channel;
+        _language = language;
+        _language.LanguageChanged += (_, _) => OnPropertyChanged(nameof(DisplayName));
     }
 
     partial void OnClassicVolumeChanged(double value)

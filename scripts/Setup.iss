@@ -1,9 +1,7 @@
 ; SonarController installer definition (Inno Setup)
-; Run scripts\Publish.ps1 first to generate the publish\ folder.
-; Build with: ISCC.exe scripts\Setup.iss (Inno Setup Compiler)
+; Build with scripts\BuildInstaller.ps1 to use the project version consistently.
 
 #define MyAppName "SonarController"
-#define MyAppVersion "1.2.4"
 #define MyAppExeName "SonarController.exe"
 #define MyPublishDir "..\publish"
 
@@ -11,7 +9,7 @@
 AppId={{B1C1B6C1-6F5D-4E9A-9C3B-2A6E7F9D1A20}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-SetupIconFile=..\Assets\SonarController.ico
+SetupIconFile=..\Assets\SonarController-App.ico
 DefaultDirName={localappdata}\Programs\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
