@@ -18,12 +18,16 @@
     <sys:String x:Key="LicenseTitle">License</sys:String>
     <sys:String x:Key="LicenseTrial">Trial</sys:String>
     <sys:String x:Key="LicensePurchased">Full version</sys:String>
+    <sys:String x:Key="LicenseDevelopment">Development license</sys:String>
     <sys:String x:Key="LicenseExpired">Trial expired</sys:String>
     <sys:String x:Key="LicenseUnavailable">License unavailable</sys:String>
+    <sys:String x:Key="LicenseUnlicensed">No valid license</sys:String>
     <sys:String x:Key="LicenseTrialDetail">Days remaining: {0} (expires: {1})</sys:String>
     <sys:String x:Key="LicensePurchasedDetail">All features are available.</sys:String>
+    <sys:String x:Key="LicenseDevelopmentDetail">Development build. All features are available for testing.</sys:String>
     <sys:String x:Key="LicenseExpiredDetail">The trial period has ended. Please consider purchasing the full version.</sys:String>
     <sys:String x:Key="LicenseUnavailableDetail">The license status could not be verified. Please try again later.</sys:String>
+    <sys:String x:Key="LicenseUnlicensedDetail">No valid license could be confirmed with Microsoft Store.</sys:String>
     <sys:String x:Key="Hotkey">Global hotkey</sys:String>
     <sys:String x:Key="Change">Change</sys:String>
     <sys:String x:Key="Devices">Audio devices</sys:String>

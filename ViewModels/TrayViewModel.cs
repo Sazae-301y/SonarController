@@ -215,6 +215,7 @@ public partial class TrayViewModel : ViewModelBase
         {
             LicenseState.Expired => _language.GetString("LicenseExpiredDetail"),
             LicenseState.Unavailable => _language.GetString("LicenseUnavailableDetail"),
+            LicenseState.Unlicensed => _language.GetString("LicenseUnlicensedDetail"),
             _ => string.Empty,
         };
     }

@@ -11,6 +11,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <DefineConstants Condition="'$(LicenseEdition)' == 'StoreDev'">$(DefineConstants);LICENSE_STORE_DEV</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

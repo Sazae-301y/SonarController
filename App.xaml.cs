@@ -28,7 +28,7 @@ public partial class App : Application
     private DispatcherTimer? _licenseRefreshTimer;
 
     // 期限切れはローカル時刻で即時判定するため、定期確認は粗くてよい。Storeは変更通知もある
-#if LICENSE_STORE
+#if LICENSE_STORE || LICENSE_STORE_DEV
     private static readonly TimeSpan LicenseRefreshInterval = TimeSpan.FromHours(4);
 #else
     private static readonly TimeSpan LicenseRefreshInterval = TimeSpan.FromMinutes(30);
@@ -95,8 +95,12 @@ public partial class App : Application
 
     private static string GetMutexName()
     {
-#if LICENSE_STORE
+#if LICENSE_STORE_DEV
+        return "SonarController.StoreDev.SingleInstance";
+#elif LICENSE_STORE
         return "SonarController.Store.SingleInstance";
+#elif LICENSE_TRIAL_TEST
+        return "SonarController.TrialTest.SingleInstance";
 #elif LICENSE_TRIAL
         return "SonarController.Trial.SingleInstance";
 #else
@@ -118,9 +122,11 @@ public partial class App : Application
         services.AddSingleton<InteractionModeService>();
 
         // License（ビルド種別でプロバイダーを切り替える）
-#if LICENSE_STORE
+#if LICENSE_STORE_DEV
+        services.AddSingleton<ILicenseProvider, DevelopmentLicenseProvider>();
+#elif LICENSE_STORE
         services.AddSingleton<ILicenseProvider>(_ => new StoreLicenseProvider(getStoreWindowHandle, new TrialLicenseProvider()));
-#elif LICENSE_TRIAL
+#elif LICENSE_TRIAL || LICENSE_TRIAL_TEST
         services.AddSingleton<ILicenseProvider, TrialLicenseProvider>();
 #else
         services.AddSingleton<ILicenseProvider, FullLicenseProvider>();

@@ -9,8 +9,10 @@ public static class AutoStartHelper
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     // 版ごとに値名を分け、同時にインストールしても自動起動設定が衝突しないようにする
-#if LICENSE_STORE
+#if LICENSE_STORE || LICENSE_STORE_DEV
     private const string ValueName = "SonarController.Store";
+#elif LICENSE_TRIAL_TEST
+    private const string ValueName = "SonarController.TrialTest";
 #elif LICENSE_TRIAL
     private const string ValueName = "SonarController.Trial";
 #else

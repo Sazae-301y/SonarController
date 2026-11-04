@@ -59,11 +59,12 @@ public sealed class TrialLicenseProviderTests
         var (provider, _, clock) = Create();
         await Status(provider);
 
-        clock.Now = T0.AddDays(5).AddHours(1);
+        var elapsedDays = Math.Min(5, TrialLicenseProvider.TrialDays - 1);
+        clock.Now = T0.AddDays(elapsedDays).AddHours(1);
         var status = await Status(provider);
 
         Assert.Equal(LicenseState.Trial, status.State);
-        Assert.Equal(10, status.RemainingDays);
+        Assert.Equal(TrialLicenseProvider.TrialDays - elapsedDays, status.RemainingDays);
     }
 
     [Fact]
@@ -84,14 +85,15 @@ public sealed class TrialLicenseProviderTests
     {
         var (provider, _, clock) = Create();
         await Status(provider);
-        clock.Now = T0.AddDays(10);
+        var observedDays = Math.Max(0, TrialLicenseProvider.TrialDays - 5);
+        clock.Now = T0.AddDays(observedDays);
         await Status(provider);
 
-        clock.Now = T0.AddDays(1);
+        clock.Now = observedDays > 0 ? T0 : T0.AddHours(-1);
         var rolledBack = await Status(provider);
-        Assert.Equal(5, rolledBack.RemainingDays);
+        Assert.Equal(TrialLicenseProvider.TrialDays - observedDays, rolledBack.RemainingDays);
 
-        clock.Now = T0.AddDays(16);
+        clock.Now = T0.AddDays(TrialLicenseProvider.TrialDays + 1);
         Assert.Equal(LicenseState.Expired, (await Status(provider)).State);
     }
 
@@ -103,14 +105,15 @@ public sealed class TrialLicenseProviderTests
     {
         var (provider, stores, clock) = Create();
         await Status(provider);
-        clock.Now = T0.AddDays(8);
+        var elapsedDays = Math.Min(8, TrialLicenseProvider.TrialDays - 1);
+        clock.Now = T0.AddDays(elapsedDays);
         await Status(provider);
 
         stores[index].Value = null;
         var status = await Status(provider);
 
         Assert.Equal(LicenseState.Trial, status.State);
-        Assert.Equal(7, status.RemainingDays);
+        Assert.Equal(TrialLicenseProvider.TrialDays - elapsedDays, status.RemainingDays);
         Assert.NotNull(stores[index].Value);
     }
 

@@ -34,12 +34,29 @@ public sealed class StoreLicenseMappingTests
     }
 
     [Fact]
-    public void InactiveLicense_IsExpired()
+    public void InactiveLicenseWithoutExpiredTrial_IsUnlicensed()
     {
         var status = StoreLicenseProvider.ToLicenseStatus(false, true, Now.AddDays(5), Now);
 
+        Assert.Equal(LicenseState.Unlicensed, status.State);
+        Assert.False(status.IsUsable);
+    }
+
+    [Fact]
+    public void InactiveTrialPastExpiration_IsExpired()
+    {
+        var status = StoreLicenseProvider.ToLicenseStatus(false, true, Now.AddSeconds(-1), Now);
+
         Assert.Equal(LicenseState.Expired, status.State);
         Assert.False(status.IsUsable);
+    }
+
+    [Fact]
+    public void InactiveFullLicense_IsUnlicensed()
+    {
+        var status = StoreLicenseProvider.ToLicenseStatus(false, false, DateTimeOffset.MaxValue, Now);
+
+        Assert.Equal(LicenseState.Unlicensed, status.State);
     }
 
     [Fact]

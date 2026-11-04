@@ -82,7 +82,12 @@ public sealed class StoreLicenseProvider : ILicenseProvider, ILicenseChangeNotif
             expiresAt > DateTimeOffset.UnixEpoch ? expiresAt : null;
 
         if (!isActive)
-            return new LicenseStatus(LicenseState.Expired, 0, meaningfulExpiration);
+        {
+            if (isTrial && meaningfulExpiration is { } trialExpiration && trialExpiration <= now)
+                return new LicenseStatus(LicenseState.Expired, 0, meaningfulExpiration);
+
+            return new LicenseStatus(LicenseState.Unlicensed, ExpiresAt: meaningfulExpiration);
+        }
 
         if (!isTrial)
             return LicenseStatus.Purchased();

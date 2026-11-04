@@ -5,10 +5,13 @@
     Identity / Publisher must match Partner Center (Product management > Product identity).
     Without them a development identity is used, which is fine for local testing but NOT for Store submission.
     The Store signs the package itself, so submit the unsigned .msix. Use -DevSign only for local installs.
+    Use -DevLicenseMode for a separately named, Debug-only MSIX that grants full local test access.
 .EXAMPLE
     .\scripts\BuildStore.ps1 -IdentityName "12345Publisher.SonarController" -Publisher "CN=XXXXXXXX-XXXX-..." -PublisherDisplayName "Your Name"
 .EXAMPLE
     .\scripts\BuildStore.ps1 -DevSign    # signed with a self-signed certificate for local testing
+    .EXAMPLE
+        .\scripts\BuildStore.ps1 -DevLicenseMode # development MSIX with all features enabled
 #>
 param(
     [string]$IdentityName = "SonarController.Dev",
@@ -16,15 +19,27 @@ param(
     [string]$PublisherDisplayName = "SonarController Dev",
     [string]$DisplayName = "SonarController",
     [switch]$SkipPublish,
-    [switch]$DevSign
+    [switch]$DevSign,
+    [switch]$DevLicenseMode
 )
 $ErrorActionPreference = "Stop"
 
+if ($DevLicenseMode) {
+    if ($IdentityName -ne "SonarController.Dev" -or $Publisher -ne "CN=SonarControllerDev") {
+        throw "DevLicenseMode requires the development identity 'SonarController.Dev' and publisher 'CN=SonarControllerDev'."
+    }
+}
+
 $root = Split-Path -Parent $PSScriptRoot
-$publishDir = Join-Path $root "publish\Store"
+$edition = if ($DevLicenseMode) { "StoreDev" } else { "Store" }
+$publishDir = Join-Path $root "publish\$edition"
 $stagingDir = Join-Path $root "artifacts\msix-staging"
 $templatePath = Join-Path $root "packaging\SonarController.Package\Package.appxmanifest.template"
 $logoSource = Join-Path $root "Assets\SonarController-App.png"
+
+if ($SkipPublish -and -not (Test-Path (Join-Path $publishDir "SonarController.exe"))) {
+    throw "publish\$edition\SonarController.exe was not found. Run without -SkipPublish."
+}
 
 [xml]$project = Get-Content -LiteralPath (Join-Path $root "SonarController.csproj") -Raw
 $version = $project.Project.PropertyGroup | ForEach-Object { $_.Version } |
@@ -34,7 +49,7 @@ if ($version -notmatch '^(\d+)\.(\d+)\.(\d+)$') {
 }
 # Storeはリビジョン(4桁目)を予約しているため必ず0にする
 $msixVersion = "$version.0"
-$msixPath = Join-Path $root "artifacts\SonarController-$version-Store.msix"
+$msixPath = Join-Path $root "artifacts\SonarController-$version-$edition.msix"
 
 function Find-SdkTool([string]$name) {
     $cmd = Get-Command $name -ErrorAction SilentlyContinue
@@ -49,13 +64,13 @@ function Find-SdkTool([string]$name) {
 }
 
 if (-not $SkipPublish) {
-    & (Join-Path $PSScriptRoot "_Build.ps1") -Edition Store -SkipInstaller
+    & (Join-Path $PSScriptRoot "_Build.ps1") -Edition $edition -SkipInstaller
 }
 if (-not (Test-Path (Join-Path $publishDir "SonarController.exe"))) {
-    throw "publish\Store\SonarController.exe was not found. Run without -SkipPublish."
+    throw "publish\$edition\SonarController.exe was not found. Run without -SkipPublish."
 }
 
-Write-Host "=== Store $version : MSIX ===" -ForegroundColor Cyan
+Write-Host "=== $edition $version : MSIX ===" -ForegroundColor Cyan
 if (Test-Path $stagingDir) { Remove-Item $stagingDir -Recurse -Force }
 New-Item -ItemType Directory -Path (Join-Path $stagingDir "Assets") | Out-Null
 Copy-Item (Join-Path $publishDir "*") $stagingDir -Recurse -Force
@@ -102,7 +117,7 @@ if (Test-Path $msixPath) { Remove-Item $msixPath -Force }
 & $makeappx pack /d $stagingDir /p $msixPath /o | Out-Host
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path $msixPath)) { throw "makeappx failed (exit code $LASTEXITCODE)" }
 
-if ($DevSign) {
+if ($DevSign -or $DevLicenseMode) {
     $signtool = Find-SdkTool "signtool.exe"
     $cert = Get-ChildItem Cert:\CurrentUser\My |
         Where-Object { $_.Subject -eq $Publisher -and $_.NotAfter -gt (Get-Date) } |

@@ -17,12 +17,16 @@
     <sys:String x:Key="LicenseTitle" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ライセンス</sys:String>
     <sys:String x:Key="LicenseTrial" xmlns:sys="clr-namespace:System;assembly=System.Runtime">体験版</sys:String>
     <sys:String x:Key="LicensePurchased" xmlns:sys="clr-namespace:System;assembly=System.Runtime">製品版</sys:String>
+    <sys:String x:Key="LicenseDevelopment" xmlns:sys="clr-namespace:System;assembly=System.Runtime">開発用ライセンス</sys:String>
     <sys:String x:Key="LicenseExpired" xmlns:sys="clr-namespace:System;assembly=System.Runtime">体験期間終了</sys:String>
     <sys:String x:Key="LicenseUnavailable" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ライセンスを確認できません</sys:String>
+    <sys:String x:Key="LicenseUnlicensed" xmlns:sys="clr-namespace:System;assembly=System.Runtime">有効なライセンスがありません</sys:String>
     <sys:String x:Key="LicenseTrialDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">残り {0} 日（有効期限: {1}）</sys:String>
     <sys:String x:Key="LicensePurchasedDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">すべての機能を利用できます。</sys:String>
+    <sys:String x:Key="LicenseDevelopmentDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">開発用ビルドです。全機能をテストできます。</sys:String>
     <sys:String x:Key="LicenseExpiredDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">体験期間が終了しました。製品版の購入をご検討ください。</sys:String>
     <sys:String x:Key="LicenseUnavailableDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ライセンス状態を確認できませんでした。時間をおいて再度ご確認ください。</sys:String>
+    <sys:String x:Key="LicenseUnlicensedDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Microsoft Storeで有効なライセンスを確認できませんでした。</sys:String>
     <sys:String x:Key="Hotkey" xmlns:sys="clr-namespace:System;assembly=System.Runtime">グローバルホットキー</sys:String>
     <sys:String x:Key="Change" xmlns:sys="clr-namespace:System;assembly=System.Runtime">変更</sys:String>
     <sys:String x:Key="Devices" xmlns:sys="clr-namespace:System;assembly=System.Runtime">オーディオデバイス</sys:String>

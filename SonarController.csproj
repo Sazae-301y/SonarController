@@ -23,16 +23,32 @@
     <NoWarn>$(NoWarn);WFAC010</NoWarn>
   </PropertyGroup>
 
-  <!-- Full/TrialはEXE配布用。StoreはMSIXのパッケージIDがある環境専用。 -->
+  <!-- Full/TrialはEXE配布用。TrialTest/Store/StoreDevはテスト用。StoreDev/TrialTestはDebug限定。 -->
   <PropertyGroup>
     <LicenseEdition Condition="'$(LicenseEdition)' == ''">Full</LicenseEdition>
     <DefineConstants Condition="'$(LicenseEdition)' == 'Trial'">$(DefineConstants);LICENSE_TRIAL</DefineConstants>
+    <DefineConstants Condition="'$(LicenseEdition)' == 'TrialTest'">$(DefineConstants);LICENSE_TRIAL_TEST</DefineConstants>
     <DefineConstants Condition="'$(LicenseEdition)' == 'Store'">$(DefineConstants);LICENSE_STORE</DefineConstants>
+    <DefineConstants Condition="'$(LicenseEdition)' == 'StoreDev'">$(DefineConstants);LICENSE_STORE_DEV</DefineConstants>
+    <TrialTestDays Condition="'$(LicenseEdition)' == 'TrialTest' and '$(TrialTestDays)' == ''">1</TrialTestDays>
   </PropertyGroup>
 
   <Target Name="ValidateLicenseEdition" BeforeTargets="PrepareForBuild">
-    <Error Condition="'$(LicenseEdition)' != 'Full' and '$(LicenseEdition)' != 'Trial' and '$(LicenseEdition)' != 'Store'"
-           Text="LicenseEdition must be Full, Trial, or Store." />
+    <Error Condition="'$(LicenseEdition)' != 'Full' and '$(LicenseEdition)' != 'Trial' and '$(LicenseEdition)' != 'TrialTest' and '$(LicenseEdition)' != 'Store' and '$(LicenseEdition)' != 'StoreDev'"
+           Text="LicenseEdition must be Full, Trial, TrialTest, Store, or StoreDev." />
+    <Error Condition="'$(LicenseEdition)' == 'StoreDev' and '$(Configuration)' != 'Debug'"
+           Text="StoreDev license mode is development-only and can only be built with Configuration=Debug." />
+    <Error Condition="'$(LicenseEdition)' == 'TrialTest' and '$(Configuration)' != 'Debug'"
+           Text="TrialTest is development-only and can only be built with Configuration=Debug." />
+    <Error Condition="'$(LicenseEdition)' == 'TrialTest' and '$(TrialTestDays)' != '1' and '$(TrialTestDays)' != '2' and '$(TrialTestDays)' != '3' and '$(TrialTestDays)' != '4' and '$(TrialTestDays)' != '5' and '$(TrialTestDays)' != '6' and '$(TrialTestDays)' != '7' and '$(TrialTestDays)' != '8' and '$(TrialTestDays)' != '9' and '$(TrialTestDays)' != '10' and '$(TrialTestDays)' != '11' and '$(TrialTestDays)' != '12' and '$(TrialTestDays)' != '13' and '$(TrialTestDays)' != '14'"
+           Text="TrialTestDays must be an integer from 1 through 14." />
+  </Target>
+
+  <Target Name="GenerateTrialTestSettings" BeforeTargets="CoreCompile" Condition="'$(LicenseEdition)' == 'TrialTest'">
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)TrialTestSettings.g.cs"
+      Lines="namespace SonarController.Services.License%3B internal static class TrialTestSettings { public const int TrialDays = $(TrialTestDays)%3B }"
+      Overwrite="true" />
   </Target>
 
   <ItemGroup>
@@ -50,6 +66,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SonarController.Tests" />
+    <Compile Include="$(IntermediateOutputPath)TrialTestSettings.g.cs" Condition="'$(LicenseEdition)' == 'TrialTest'" />
     <!-- テスト・パッケージング用ファイルはアプリ本体に含めない -->
     <Compile Remove="tests\**" />
     <EmbeddedResource Remove="tests\**" />

@@ -18,12 +18,16 @@
     <sys:String x:Key="LicenseTitle">许可证</sys:String>
     <sys:String x:Key="LicenseTrial">试用版</sys:String>
     <sys:String x:Key="LicensePurchased">完整版</sys:String>
+    <sys:String x:Key="LicenseDevelopment">开发许可证</sys:String>
     <sys:String x:Key="LicenseExpired">试用期已结束</sys:String>
     <sys:String x:Key="LicenseUnavailable">无法获取许可证状态</sys:String>
+    <sys:String x:Key="LicenseUnlicensed">未找到有效许可证</sys:String>
     <sys:String x:Key="LicenseTrialDetail">剩余 {0} 天（到期日期：{1}）</sys:String>
     <sys:String x:Key="LicensePurchasedDetail">所有功能均可使用。</sys:String>
+    <sys:String x:Key="LicenseDevelopmentDetail">开发版本，可测试所有功能。</sys:String>
     <sys:String x:Key="LicenseExpiredDetail">试用期已结束。请考虑购买完整版。</sys:String>
     <sys:String x:Key="LicenseUnavailableDetail">无法验证许可证状态，请稍后重试。</sys:String>
+    <sys:String x:Key="LicenseUnlicensedDetail">无法在 Microsoft Store 中确认有效许可证。</sys:String>
     <sys:String x:Key="Hotkey">全局快捷键</sys:String>
     <sys:String x:Key="Change">更改</sys:String>
     <sys:String x:Key="Devices">音频设备</sys:String>

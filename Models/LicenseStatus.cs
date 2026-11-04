@@ -6,12 +6,20 @@ public enum LicenseState
     Purchased,
     Expired,
     Unavailable,
+    Unlicensed,
+#if LICENSE_STORE_DEV
+    Development,
+#endif
 }
 
 /// <param name="RemainingDays">体験版のみ有効。それ以外は null</param>
 public sealed record LicenseStatus(LicenseState State, int? RemainingDays = null, DateTimeOffset? ExpiresAt = null)
 {
+#if LICENSE_STORE_DEV
+    public bool IsUsable => State is LicenseState.Trial or LicenseState.Purchased or LicenseState.Development;
+#else
     public bool IsUsable => State is LicenseState.Trial or LicenseState.Purchased;
+#endif
 
     public static LicenseStatus Purchased() => new(LicenseState.Purchased);
     public static LicenseStatus Unavailable() => new(LicenseState.Unavailable);

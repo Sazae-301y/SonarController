@@ -1,7 +1,7 @@
 ﻿; SonarController installer definition (Inno Setup)
 ; Build with scripts\BuildFull.ps1 / BuildTrial.ps1 to use the project version consistently.
 
-; MyEdition (Full / Trial) is passed from _Build.ps1
+; MyEdition (Full / Trial / TrialTest) is passed from _Build.ps1
 #ifndef MyEdition
   #define MyEdition "Full"
 #endif
@@ -9,11 +9,15 @@
 #define MyAppExeName "SonarController.exe"
 #define MyPublishDir "..\publish\" + MyEdition
 
-; Trial uses a separate AppId/name/folder so it never overwrites the Full install
+; Trial editions use separate AppIds/names/folders so they never overwrite each other or the Full install
 #if MyEdition == "Trial"
   #define MyAppName "SonarController Trial"
   #define MyAppId "{{B1C1B6C1-6F5D-4E9A-9C3B-2A6E7F9D1A21}"
   #define MyRunValue "SonarController.Trial"
+#elif MyEdition == "TrialTest"
+  #define MyAppName "SonarController Trial Test"
+  #define MyAppId "{{B1C1B6C1-6F5D-4E9A-9C3B-2A6E7F9D1A22}"
+  #define MyRunValue "SonarController.TrialTest"
 #elif MyEdition == "Full"
   #define MyAppName "SonarController"
   #define MyAppId "{{B1C1B6C1-6F5D-4E9A-9C3B-2A6E7F9D1A20}"

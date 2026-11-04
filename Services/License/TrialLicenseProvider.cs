@@ -17,12 +17,19 @@ namespace SonarController.Services.License;
 /// </summary>
 public sealed class TrialLicenseProvider : ILicenseProvider
 {
-    public const int TrialDays = 15;
+#if LICENSE_TRIAL_TEST
+    public const int TrialDays = TrialTestSettings.TrialDays;
 
-    private static readonly TimeSpan WriteInterval = TimeSpan.FromHours(1);
+    private const string RegistryKeyPath = @"Software\SonarController\TrialTest";
+    private const string RegistryValueName = "TrialTestState";
+#else
+    public const int TrialDays = 15;
 
     private const string RegistryKeyPath = @"Software\SonarController";
     private const string RegistryValueName = "TrialState";
+#endif
+
+    private static readonly TimeSpan WriteInterval = TimeSpan.FromHours(1);
 
     private readonly IReadOnlyList<IRecordStore> _stores;
     private readonly Func<DateTimeOffset> _now;
@@ -33,11 +40,19 @@ public sealed class TrialLicenseProvider : ILicenseProvider
             [
                 new FileStore(Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+#if LICENSE_TRIAL_TEST
+                    "SonarController", "TrialTest", "trial.dat")),
+#else
                     "SonarController", "trial.dat")),
+#endif
                 new RegistryStore(),
                 new FileStore(Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+#if LICENSE_TRIAL_TEST
+                    "SonarController", "TrialTest", "trial.dat")),
+#else
                     "SonarController", "trial.dat")),
+#endif
             ],
             () => DateTimeOffset.UtcNow,
             GetMachineKey())
@@ -184,7 +199,11 @@ public sealed class TrialLicenseProvider : ILicenseProvider
         {
         }
 
+#if LICENSE_TRIAL_TEST
+        return SHA256.HashData(Encoding.UTF8.GetBytes($"SonarController.TrialTest.v1|{guid ?? Environment.MachineName}"));
+#else
         return SHA256.HashData(Encoding.UTF8.GetBytes($"SonarController.Trial.v1|{guid ?? Environment.MachineName}"));
+#endif
     }
 
     internal interface IRecordStore

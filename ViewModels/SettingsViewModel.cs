@@ -123,7 +123,11 @@ public partial class SettingsViewModel : ViewModelBase
         {
             LicenseState.Trial => "LicenseTrial",
             LicenseState.Purchased => "LicensePurchased",
+#if LICENSE_STORE_DEV
+            LicenseState.Development => "LicenseDevelopment",
+#endif
             LicenseState.Expired => "LicenseExpired",
+            LicenseState.Unlicensed => "LicenseUnlicensed",
             _ => "LicenseUnavailable",
         });
 
@@ -135,6 +139,10 @@ public partial class SettingsViewModel : ViewModelBase
                     status.ExpiresAt.Value.ToLocalTime().ToString("d")),
             LicenseState.Expired => _language.GetString("LicenseExpiredDetail"),
             LicenseState.Unavailable => _language.GetString("LicenseUnavailableDetail"),
+            LicenseState.Unlicensed => _language.GetString("LicenseUnlicensedDetail"),
+#if LICENSE_STORE_DEV
+            LicenseState.Development => _language.GetString("LicenseDevelopmentDetail"),
+#endif
             _ => _language.GetString("LicensePurchasedDetail"),
         };
     }

@@ -70,7 +70,8 @@ public sealed class LicenseServiceTests
     [Theory]
     [InlineData(LicenseState.Expired)]
     [InlineData(LicenseState.Unavailable)]
-    public async Task ExpiredOrUnavailable_BlocksOperations(LicenseState state)
+    [InlineData(LicenseState.Unlicensed)]
+    public async Task NonUsableLicenseStates_BlocksOperations(LicenseState state)
     {
         var service = new LicenseService(new FakeProvider(new LicenseStatus(state, 0, null)));
         await service.RefreshAsync();
@@ -118,4 +119,15 @@ public sealed class LicenseServiceTests
         Assert.Equal(LicenseState.Purchased, status.State);
         Assert.True(status.IsUsable);
     }
+
+#if LICENSE_STORE_DEV
+    [Fact]
+    public async Task DevelopmentLicenseProvider_AllowsFullFeatureTesting()
+    {
+        var status = await new DevelopmentLicenseProvider().GetStatusAsync();
+
+        Assert.Equal(LicenseState.Development, status.State);
+        Assert.True(status.IsUsable);
+    }
+#endif
 }
