@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
-using SonarController2.Helpers;
+using SonarController.Helpers;
 using System.Windows.Input;
 
-namespace SonarController2.ViewModels;
+namespace SonarController.ViewModels;
 
 /// <summary>
 /// 設定ウィンドウ用 ViewModel。自動起動設定とバージョン情報を扱う。

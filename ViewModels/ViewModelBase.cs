@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace SonarController2.ViewModels;
+namespace SonarController.ViewModels;
 
 /// <summary>
 /// 全 ViewModel の基底クラス

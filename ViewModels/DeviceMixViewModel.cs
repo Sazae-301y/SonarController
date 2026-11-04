@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using SonarController2.Models;
-using SonarController2.Services;
+using SonarController.Models;
+using SonarController.Services;
 using System.Collections.ObjectModel;
 
-namespace SonarController2.ViewModels;
+namespace SonarController.ViewModels;
 
 /// <summary>ミックス単位のデバイス選択とデバイスマスター音量を管理する。</summary>
 public partial class DeviceMixViewModel : ViewModelBase

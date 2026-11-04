@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using SonarController2.ViewModels;
+using SonarController.ViewModels;
 
-namespace SonarController2.Views;
+namespace SonarController.Views;
 
 public partial class SettingsWindow : Window
 {

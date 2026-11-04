@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using SonarController2.Models;
-using SonarController2.Services;
+using SonarController.Models;
+using SonarController.Services;
 using System.Collections.ObjectModel;
 
-namespace SonarController2.ViewModels;
+namespace SonarController.ViewModels;
 
 /// <summary>
 /// 各チャンネル（Master, Game, Chat, ...）の音量・ミュート・EQプリセットを保持する ViewModel。

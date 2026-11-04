@@ -1,7 +1,7 @@
 using NAudio.CoreAudioApi;
-using SonarController2.Models;
+using SonarController.Models;
 
-namespace SonarController2.Services;
+namespace SonarController.Services;
 
 /// <summary>Windowsの物理オーディオエンドポイント音量を操作する。</summary>
 public interface IAudioEndpointVolumeService

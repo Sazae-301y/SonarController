@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Build SonarController2, copy it into %LOCALAPPDATA%\Programs\SonarController2,
+    Build SonarController, copy it into %LOCALAPPDATA%\Programs\SonarController,
     and launch the installed copy.
 .DESCRIPTION
     Development-only script for testing the app in a user-install-like location.
@@ -9,7 +9,7 @@
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
-$appName = "SonarController2"
+$appName = "SonarController"
 $sourceDir = Join-Path $root "bin\Debug\net8.0-windows\win-x64"
 $installDir = Join-Path $env:LOCALAPPDATA "Programs\$appName"
 $sourceExePath = Join-Path $sourceDir "$appName.exe"

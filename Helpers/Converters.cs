@@ -5,7 +5,7 @@ using System.Windows.Media;
 using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
 
-namespace SonarController2.Helpers;
+namespace SonarController.Helpers;
 
 /// <summary>0.0〜1.0 の音量値をパーセント表示文字列に変換する</summary>
 public class PercentConverter : IValueConverter

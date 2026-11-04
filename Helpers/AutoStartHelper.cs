@@ -1,6 +1,6 @@
 using Microsoft.Win32;
 
-namespace SonarController2.Helpers;
+namespace SonarController.Helpers;
 
 /// <summary>
 /// Windowsログイン時の自動起動をレジストリ Run キーで管理する
@@ -8,7 +8,7 @@ namespace SonarController2.Helpers;
 public static class AutoStartHelper
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string ValueName = "SonarController2";
+    private const string ValueName = "SonarController";
 
     public static bool IsEnabled()
     {

@@ -1,4 +1,4 @@
-namespace SonarController2.Models;
+namespace SonarController.Models;
 
 /// <summary>
 /// Streamer Mode のミックス（Personal / Stream）

@@ -1,23 +1,23 @@
-; SonarController2 installer definition (Inno Setup)
+; SonarController installer definition (Inno Setup)
 ; Run scripts\Publish.ps1 first to generate the publish\ folder.
 ; Build with: ISCC.exe scripts\Setup.iss (Inno Setup Compiler)
 
-#define MyAppName "SonarController2"
+#define MyAppName "SonarController"
 #define MyAppVersion "1.2.4"
-#define MyAppExeName "SonarController2.exe"
+#define MyAppExeName "SonarController.exe"
 #define MyPublishDir "..\publish"
 
 [Setup]
 AppId={{B1C1B6C1-6F5D-4E9A-9C3B-2A6E7F9D1A20}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-SetupIconFile=..\Assets\SonarController2.ico
+SetupIconFile=..\Assets\SonarController.ico
 DefaultDirName={localappdata}\Programs\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir=..\artifacts
-OutputBaseFilename=SonarController2-Setup-{#MyAppVersion}
+OutputBaseFilename=SonarController-Setup-{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
@@ -45,4 +45,4 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}
 
 [UninstallRun]
 ; Terminate the resident process before uninstalling
-Filename: "{cmd}"; Parameters: "/C taskkill /IM {#MyAppExeName} /F"; Flags: runhidden skipifdoesntexist; RunOnceId: "TerminateSonarController2"
+Filename: "{cmd}"; Parameters: "/C taskkill /IM {#MyAppExeName} /F"; Flags: runhidden skipifdoesntexist; RunOnceId: "TerminateSonarController"

@@ -1,11 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SonarController2.Helpers;
-using SonarController2.Models;
-using SonarController2.Services;
+using SonarController.Helpers;
+using SonarController.Models;
+using SonarController.Services;
 using System.Collections.ObjectModel;
 
-namespace SonarController2.ViewModels;
+namespace SonarController.ViewModels;
 
 /// <summary>
 /// トレイのコンパクトポップアップ用 ViewModel。

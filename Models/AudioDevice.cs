@@ -1,4 +1,4 @@
-namespace SonarController2.Models;
+namespace SonarController.Models;
 
 /// <summary>
 /// Windowsの再生/録音デバイス（/audioDevices から取得）

@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $publishScript = Join-Path $PSScriptRoot "Publish.ps1"
 $setupScript = Join-Path $PSScriptRoot "Setup.iss"
-$installerPath = Join-Path $root "artifacts\SonarController2-Setup-1.0.0.exe"
+$installerPath = Join-Path $root "artifacts\SonarController-Setup-1.0.0.exe"
 
 $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
 if (-not $iscc) {

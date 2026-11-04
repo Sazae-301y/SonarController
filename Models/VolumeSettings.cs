@@ -1,4 +1,4 @@
-namespace SonarController2.Models;
+namespace SonarController.Models;
 
 /// <summary>
 /// 1チャンネルの音量・ミュート状態

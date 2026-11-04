@@ -1,6 +1,6 @@
-using SonarController2.Models;
+using SonarController.Models;
 
-namespace SonarController2.Services;
+namespace SonarController.Services;
 
 /// <summary>
 /// Sonar API の抽象化レイヤー

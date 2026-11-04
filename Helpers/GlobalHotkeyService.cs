@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Input;
 
-namespace SonarController2.Helpers;
+namespace SonarController.Helpers;
 
 public sealed record HotkeyBinding(ModifierKeys Modifiers, Key Key)
 {
@@ -32,7 +32,7 @@ public sealed class GlobalHotkeyService : IDisposable
     private const uint ModNoRepeat = 0x4000;
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "SonarController2",
+        "SonarController",
         "settings.json");
 
     private HwndSource? _source;

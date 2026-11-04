@@ -1,8 +1,8 @@
-<Window x:Class="SonarController2.Views.SettingsWindow"
+<Window x:Class="SonarController.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="SonarController2 - 設定"
-        Icon="pack://application:,,,/Assets/SonarController2.ico"
+        Title="SonarController - 設定"
+        Icon="pack://application:,,,/Assets/SonarController.ico"
         Width="500" Height="680"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
@@ -45,7 +45,7 @@
             <TextBlock Text="{Binding DisplayStatus}" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,16"/>
 
             <TextBlock Text="バージョン情報" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
-            <TextBlock Text="{Binding AppVersion, StringFormat='SonarController2 v{0}'}" Margin="0,0,0,16"/>
+            <TextBlock Text="{Binding AppVersion, StringFormat='SonarController v{0}'}" Margin="0,0,0,16"/>
 
             <TextBlock Text="ホットキー設定" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
             <DockPanel Margin="0,0,0,8">

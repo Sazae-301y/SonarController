@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows.Forms;
 
-namespace SonarController2.Helpers;
+namespace SonarController.Helpers;
 
 /// <param name="MonitorId">モニター固有ID。null は「カーソルのあるディスプレイ」</param>
 public sealed record DisplayOption(string? MonitorId, string DisplayName, bool IsConnected = true);
@@ -12,7 +12,7 @@ public sealed class DisplayPreferenceService
 {
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "SonarController2",
+        "SonarController",
         "display-settings.json");
 
     private sealed record MonitorInfo(Screen Screen, string Id, string Name);

@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
-using SonarController2.Models;
+using SonarController.Models;
 
-namespace SonarController2.Services;
+namespace SonarController.Services;
 
 /// <summary>
 /// ISonarService の実装。すべての API 呼び出しをここに集約する。

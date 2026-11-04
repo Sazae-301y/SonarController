@@ -2,19 +2,19 @@ using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace SonarController2.Helpers;
+namespace SonarController.Helpers;
 
 public sealed partial class InteractionModeService : ObservableObject
 {
     private static readonly string SettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "SonarController2",
+        "SonarController",
         "interaction-settings.json");
 
     private bool _isLoading;
 
     [ObservableProperty]
-    private bool _isTouchOptimized = true;
+    private bool _isTouchOptimized;
 
     [ObservableProperty]
     private string _status = string.Empty;

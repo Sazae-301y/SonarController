@@ -6,10 +6,10 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using SonarController2.Helpers;
-using SonarController2.ViewModels;
+using SonarController.Helpers;
+using SonarController.ViewModels;
 
-namespace SonarController2.Views;
+namespace SonarController.Views;
 
 public partial class TrayPopupWindow : Window
 {

@@ -1,10 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SonarController2.Models;
-using SonarController2.Services;
+using SonarController.Models;
+using SonarController.Services;
 using System.Collections.ObjectModel;
 
-namespace SonarController2.ViewModels;
+namespace SonarController.ViewModels;
 
 /// <summary>
 /// 設定ウィンドウ内のデバイス一覧セクション用 ViewModel（読み取り専用）

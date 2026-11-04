@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text.Json;
 
-namespace SonarController2.Services;
+namespace SonarController.Services;
 
 /// <summary>
 /// Sonar ローカル API への低レベル HTTP クライアント

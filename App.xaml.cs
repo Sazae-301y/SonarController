@@ -2,13 +2,13 @@ using System.Threading;
 using System.Windows;
 using H.NotifyIcon;
 using Microsoft.Extensions.DependencyInjection;
-using SonarController2.Helpers;
-using SonarController2.Services;
-using SonarController2.ViewModels;
-using SonarController2.Views;
+using SonarController.Helpers;
+using SonarController.Services;
+using SonarController.ViewModels;
+using SonarController.Views;
 using Application = System.Windows.Application;
 
-namespace SonarController2;
+namespace SonarController;
 
 public partial class App : Application
 {
@@ -27,10 +27,10 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        _singleInstanceMutex = new Mutex(true, "SonarController2.SingleInstance", out var isNew);
+        _singleInstanceMutex = new Mutex(true, "SonarController.SingleInstance", out var isNew);
         if (!isNew)
         {
-            System.Windows.MessageBox.Show("SonarController2は既に起動しています。", "SonarController2",
+            System.Windows.MessageBox.Show("SonarControllerは既に起動しています。", "SonarController",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             Shutdown();
             return;
@@ -71,14 +71,14 @@ public partial class App : Application
 
     private void SetupTrayIcon()
     {
-        var iconResource = GetResourceStream(new Uri("pack://application:,,,/Assets/SonarController2.ico"))
+        var iconResource = GetResourceStream(new Uri("pack://application:,,,/Assets/SonarController.ico"))
             ?? throw new InvalidOperationException("The application icon resource could not be loaded.");
         _trayIconStream = iconResource.Stream;
 
         _trayIcon = new TaskbarIcon
         {
             Icon = new System.Drawing.Icon(_trayIconStream),
-            ToolTipText = "SonarController2",
+            ToolTipText = "SonarController",
         };
         _trayIcon.TrayLeftMouseUp += (_, _) => _popupWindow?.TogglePopup();
 

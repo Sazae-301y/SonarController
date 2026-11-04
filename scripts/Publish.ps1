@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Publish SonarController2 for release (self-contained, single-file exe).
+    Publish SonarController for release (self-contained, single-file exe).
 .DESCRIPTION
     Runs dotnet publish and outputs to a publish/ folder (not bin/) so that
     scripts/Setup.iss (Inno Setup) can use it as its source folder.
@@ -8,7 +8,7 @@
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
-$csproj = Join-Path $root "SonarController2.csproj"
+$csproj = Join-Path $root "SonarController.csproj"
 $publishDir = Join-Path $root "publish"
 
 if (Test-Path $publishDir) {

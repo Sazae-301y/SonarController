@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace SonarController2.Services;
+namespace SonarController.Services;
 
 /// <summary>
 /// SteelSeries GG の coreProps.json を読み取り、Sonar API の WebServerAddress を解決する

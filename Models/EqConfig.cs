@@ -1,4 +1,4 @@
-namespace SonarController2.Models;
+namespace SonarController.Models;
 
 /// <summary>
 /// EQ設定プリセット（/configs エンドポイントから取得）
