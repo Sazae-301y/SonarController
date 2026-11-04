@@ -20,7 +20,15 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
 
+  <!-- ビルド種別: Full(既定・知人配布の完全版) / Trial(体験版) 例: dotnet build -p:LicenseEdition=Trial -->
+  <PropertyGroup>
+    <LicenseEdition Condition="'$(LicenseEdition)' == ''">Full</LicenseEdition>
+    <DefineConstants Condition="'$(LicenseEdition)' == 'Trial'">$(DefineConstants);LICENSE_TRIAL</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
+    <!-- Trial license data protection -->
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <!-- MVVM toolkit -->
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <!-- Dependency Injection -->

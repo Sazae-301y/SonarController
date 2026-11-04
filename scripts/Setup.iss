@@ -1,12 +1,25 @@
-; SonarController installer definition (Inno Setup)
-; Build with scripts\BuildInstaller.ps1 to use the project version consistently.
+﻿; SonarController installer definition (Inno Setup)
+; Build with scripts\BuildFull.ps1 / BuildTrial.ps1 to use the project version consistently.
 
-#define MyAppName "SonarController"
+; MyEdition (Full / Trial) is passed from _Build.ps1
+#ifndef MyEdition
+  #define MyEdition "Full"
+#endif
+
 #define MyAppExeName "SonarController.exe"
-#define MyPublishDir "..\publish"
+#define MyPublishDir "..\publish\" + MyEdition
+
+; Trial uses a separate AppId/name/folder so it never overwrites the Full install
+#if MyEdition == "Trial"
+  #define MyAppName "SonarController Trial"
+  #define MyAppId "{{B1C1B6C1-6F5D-4E9A-9C3B-2A6E7F9D1A21}"
+#else
+  #define MyAppName "SonarController"
+  #define MyAppId "{{B1C1B6C1-6F5D-4E9A-9C3B-2A6E7F9D1A20}"
+#endif
 
 [Setup]
-AppId={{B1C1B6C1-6F5D-4E9A-9C3B-2A6E7F9D1A20}}
+AppId={#MyAppId}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 SetupIconFile=..\Assets\SonarController-App.ico
@@ -15,7 +28,7 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir=..\artifacts
-OutputBaseFilename=SonarController-Setup-{#MyAppVersion}
+OutputBaseFilename=SonarController-Setup-{#MyAppVersion}-{#MyEdition}
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible

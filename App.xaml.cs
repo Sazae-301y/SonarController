@@ -4,6 +4,7 @@ using H.NotifyIcon;
 using Microsoft.Extensions.DependencyInjection;
 using SonarController.Helpers;
 using SonarController.Services;
+using SonarController.Services.License;
 using SonarController.ViewModels;
 using SonarController.Views;
 using Application = System.Windows.Application;
@@ -47,6 +48,7 @@ public partial class App : Application
         _settingsWindow = new SettingsWindow(Services.GetRequiredService<SettingsViewModel>());
 
         SetupTrayIcon();
+        _ = Services.GetRequiredService<LicenseService>().RefreshAsync();
     }
 
     private static IServiceProvider ConfigureServices()
@@ -61,6 +63,14 @@ public partial class App : Application
         services.AddSingleton<DisplayPreferenceService>();
         services.AddSingleton<LanguageService>();
         services.AddSingleton<InteractionModeService>();
+
+        // License（ビルド種別でプロバイダーを切り替える）
+#if LICENSE_TRIAL
+        services.AddSingleton<ILicenseProvider, TrialLicenseProvider>();
+#else
+        services.AddSingleton<ILicenseProvider, FullLicenseProvider>();
+#endif
+        services.AddSingleton<LicenseService>();
 
         // ViewModels（トレイポップアップ・設定ウィンドウとも常駐中は使い回すためSingleton）
         services.AddSingleton<TrayViewModel>();
