@@ -139,8 +139,29 @@ public partial class SettingsViewModel : ViewModelBase
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private static void OpenPurchasePage() => PurchaseLink.Open();
 
+    [ObservableProperty]
+    private bool _showTrialInstalledNotice;
+
+#if LICENSE_STORE || LICENSE_STORE_DEV
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void UninstallTrial()
+    {
+        var command = TrialUninstaller.FindUninstallCommand();
+        if (command is not null)
+            TrialUninstaller.TryStartUninstall(command);
+    }
+#else
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void UninstallTrial()
+    {
+    }
+#endif
+
     private void UpdateLicenseDisplay(LicenseStatus status)
     {
+#if LICENSE_STORE || LICENSE_STORE_DEV
+        ShowTrialInstalledNotice = TrialUninstaller.FindUninstallCommand() is not null;
+#endif
         ShowPurchasePrompt = status.ShouldPromptPurchase;
         IsPurchaseUrgent = status.IsPurchaseUrgent;
         LicenseStateText = _language.GetString(status.State switch

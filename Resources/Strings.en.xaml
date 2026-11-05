@@ -28,7 +28,10 @@
     <sys:String x:Key="LicenseExpiredDetail">The trial period has ended. Please consider purchasing the full version.</sys:String>
     <sys:String x:Key="LicenseUnavailableDetail">The license status could not be verified. Please try again later.</sys:String>
     <sys:String x:Key="LicenseUnlicensedDetail">No valid license could be confirmed with Microsoft Store.</sys:String>
+    <sys:String x:Key="TrialInstalledNotice">The installer-based Trial version is still installed. We recommend uninstalling it to avoid duplicate launches and auto-start entries.</sys:String>
+    <sys:String x:Key="TrialUninstallButton">Uninstall Trial version</sys:String>
     <sys:String x:Key="LicensePurchaseButton">Buy the full version</sys:String>
+    <sys:String x:Key="TrialUninstallMessage">The installer-based Trial version is still installed. Thank you for purchasing the Store version.&#10;Do you want to uninstall the Trial version?&#10;&#10;Yes: Uninstall&#10;No: Don't ask again&#10;Cancel: Not now</sys:String>
     <sys:String x:Key="Hotkey">Global hotkey</sys:String>
     <sys:String x:Key="Change">Change</sys:String>
     <sys:String x:Key="Devices">Audio devices</sys:String>

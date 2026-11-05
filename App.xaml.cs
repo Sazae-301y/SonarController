@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using H.NotifyIcon;
 using Microsoft.Extensions.DependencyInjection;
 using SonarController.Helpers;
+using SonarController.Models;
 using SonarController.Services;
 using SonarController.Services.License;
 using SonarController.ViewModels;
@@ -88,10 +89,50 @@ public partial class App : Application
 
         var licenseService = Services.GetRequiredService<LicenseService>();
         await licenseService.RefreshAsync();
+#if LICENSE_STORE || LICENSE_STORE_DEV
+        PromptTrialUninstallIfPurchased(licenseService.Current, language);
+#endif
         _licenseRefreshTimer = new DispatcherTimer { Interval = LicenseRefreshInterval };
-        _licenseRefreshTimer.Tick += async (_, _) => await licenseService.RefreshAsync();
+        _licenseRefreshTimer.Tick += async (_, _) =>
+        {
+            var status = await licenseService.RefreshAsync();
+#if LICENSE_STORE || LICENSE_STORE_DEV
+            PromptTrialUninstallIfPurchased(status, language);
+#endif
+        };
         _licenseRefreshTimer.Start();
     }
+
+#if LICENSE_STORE || LICENSE_STORE_DEV
+    private bool _trialUninstallPrompted;
+
+    // 購入済み(開発用ライセンスを含む)でインストーラー版(Trial)が残っている場合のみ、1回だけ削除を案内する
+    private void PromptTrialUninstallIfPurchased(LicenseStatus status, LanguageService language)
+    {
+#if LICENSE_STORE_DEV
+        var isPurchased = status.State == LicenseState.Development;
+#else
+        var isPurchased = status.State == LicenseState.Purchased;
+#endif
+        if (_trialUninstallPrompted || !isPurchased)
+            return;
+        _trialUninstallPrompted = true;
+
+        if (TrialUninstaller.IsDismissed())
+            return;
+        var command = TrialUninstaller.FindUninstallCommand();
+        if (command is null)
+            return;
+
+        var result = System.Windows.MessageBox.Show(
+            language.GetString("TrialUninstallMessage"), "SonarController",
+            MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+        if (result == MessageBoxResult.Yes)
+            TrialUninstaller.TryStartUninstall(command);
+        else if (result == MessageBoxResult.No)
+            TrialUninstaller.Dismiss();
+    }
+#endif
 
     private static string GetMutexName()
     {

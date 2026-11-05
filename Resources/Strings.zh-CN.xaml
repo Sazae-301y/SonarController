@@ -28,7 +28,10 @@
     <sys:String x:Key="LicenseExpiredDetail">试用期已结束。请考虑购买完整版。</sys:String>
     <sys:String x:Key="LicenseUnavailableDetail">无法验证许可证状态，请稍后重试。</sys:String>
     <sys:String x:Key="LicenseUnlicensedDetail">无法在 Microsoft Store 中确认有效许可证。</sys:String>
+    <sys:String x:Key="TrialInstalledNotice">检测到仍安装着安装程序版的试用版。建议卸载，以避免重复启动和重复的开机自启。</sys:String>
+    <sys:String x:Key="TrialUninstallButton">卸载试用版</sys:String>
     <sys:String x:Key="LicensePurchaseButton">购买完整版</sys:String>
+    <sys:String x:Key="TrialUninstallMessage">检测到仍安装着安装程序版的试用版。感谢您购买 Store 版。&#10;是否卸载试用版？&#10;&#10;是：卸载&#10;否：不再提示&#10;取消：暂不</sys:String>
     <sys:String x:Key="Hotkey">全局快捷键</sys:String>
     <sys:String x:Key="Change">更改</sys:String>
     <sys:String x:Key="Devices">音频设备</sys:String>

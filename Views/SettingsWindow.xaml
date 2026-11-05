@@ -323,6 +323,24 @@
                                 </Style>
                             </Button.Style>
                         </Button>
+                        <StackPanel Margin="0,12,0,0">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ShowTrialInstalledNotice}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock Text="{DynamicResource TrialInstalledNotice}" Foreground="#9A6700"
+                                       FontSize="12" TextWrapping="Wrap"/>
+                            <Button Content="{DynamicResource TrialUninstallButton}"
+                                    Command="{Binding UninstallTrialCommand}"
+                                    HorizontalAlignment="Left" Margin="0,6,0,0" Padding="12,5"
+                                    Cursor="Hand"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
