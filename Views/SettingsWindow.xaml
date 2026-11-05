@@ -229,8 +229,15 @@
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
-                        <TextBlock Text="SonarController" FontSize="13" FontWeight="Bold"
-                                   Foreground="#28233C"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="SonarController" FontSize="13" FontWeight="Bold"
+                                       Foreground="#28233C"/>
+                            <Border Background="#453B72" CornerRadius="8" Padding="7,1" Margin="8,0,0,0"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="{Binding EditionName}" FontSize="10" FontWeight="SemiBold"
+                                           Foreground="White"/>
+                            </Border>
+                        </StackPanel>
                         <TextBlock Text="{DynamicResource SettingsTitle}" FontSize="11"
                                    Foreground="#7C8495" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
@@ -284,7 +291,38 @@
                         <TextBlock Text="{Binding LicenseStateText}" Foreground="#453B72"
                                    FontSize="14" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding LicenseDetailText}" Foreground="#758096"
-                                   FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                   FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsPurchaseUrgent}" Value="True">
+                                            <Setter Property="Foreground" Value="#B3261E"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button Content="{DynamicResource LicensePurchaseButton}"
+                                Command="{Binding OpenPurchasePageCommand}"
+                                HorizontalAlignment="Left" Margin="0,10,0,0" Padding="16,7"
+                                Cursor="Hand" FontWeight="SemiBold" Foreground="White"
+                                BorderThickness="0" Background="#453B72">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ShowPurchasePrompt}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsPurchaseUrgent}" Value="True">
+                                            <Setter Property="Background" Value="#B3261E"/>
+                                            <Setter Property="FontSize" Value="14"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
                 </Border>
 

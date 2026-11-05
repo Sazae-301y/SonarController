@@ -21,6 +21,12 @@ public sealed record LicenseStatus(LicenseState State, int? RemainingDays = null
     public bool IsUsable => State is LicenseState.Trial or LicenseState.Purchased;
 #endif
 
+    /// <summary>製品版でない利用者に購入ページを案内する。状態が不明(Unavailable)の場合は案内しない</summary>
+    public bool ShouldPromptPurchase => State is LicenseState.Trial or LicenseState.Expired or LicenseState.Unlicensed;
+
+    /// <summary>ライセンスなし・期限切れは購入案内を強調表示する</summary>
+    public bool IsPurchaseUrgent => State is LicenseState.Expired or LicenseState.Unlicensed;
+
     public static LicenseStatus Purchased() => new(LicenseState.Purchased);
     public static LicenseStatus Unavailable() => new(LicenseState.Unavailable);
 }

@@ -48,6 +48,12 @@ public partial class TrayViewModel : ViewModelBase
     private string _licenseNoticeText = string.Empty;
 
     [ObservableProperty]
+    private bool _showPurchasePrompt;
+
+    [ObservableProperty]
+    private bool _isPurchaseUrgent;
+
+    [ObservableProperty]
     private bool _isStreamerMode;
 
     // ---- Streamer Mode: Audience Monitoring ----
@@ -79,6 +85,9 @@ public partial class TrayViewModel : ViewModelBase
         DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "StreamMix", SonarMix.Stream, isInput: false, language: language));
         DeviceMixes.Add(new DeviceMixViewModel(sonar, endpointVolume, "MicrophoneInput", mix: null, isInput: true, language: language));
     }
+
+    [RelayCommand]
+    private static void OpenPurchasePage() => PurchaseLink.Open();
 
     [RelayCommand]
     public async Task LoadAsync()
@@ -211,6 +220,8 @@ public partial class TrayViewModel : ViewModelBase
     {
         IsLicenseUsable = _licenseService.IsUsable;
         IsLicenseBlocked = !IsLicenseUsable;
+        ShowPurchasePrompt = status.ShouldPromptPurchase;
+        IsPurchaseUrgent = status.IsPurchaseUrgent;
         LicenseNoticeText = status.State switch
         {
             LicenseState.Expired => _language.GetString("LicenseExpiredDetail"),

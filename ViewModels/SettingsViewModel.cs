@@ -49,6 +49,25 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _licenseDetailText = string.Empty;
 
+    public string EditionName =>
+#if LICENSE_STORE_DEV
+        "Store (Dev)";
+#elif LICENSE_STORE
+        "Microsoft Store";
+#elif LICENSE_TRIAL_TEST
+        $"Trial (Test {SonarController.Services.License.TrialTestSettings.TrialDays}d)";
+#elif LICENSE_TRIAL
+        "Trial";
+#else
+        "Full";
+#endif
+
+    [ObservableProperty]
+    private bool _showPurchasePrompt;
+
+    [ObservableProperty]
+    private bool _isPurchaseUrgent;
+
     public string AppVersion =>
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -117,8 +136,13 @@ public partial class SettingsViewModel : ViewModelBase
         UpdateLicenseDisplay(status);
     }
 
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private static void OpenPurchasePage() => PurchaseLink.Open();
+
     private void UpdateLicenseDisplay(LicenseStatus status)
     {
+        ShowPurchasePrompt = status.ShouldPromptPurchase;
+        IsPurchaseUrgent = status.IsPurchaseUrgent;
         LicenseStateText = _language.GetString(status.State switch
         {
             LicenseState.Trial => "LicenseTrial",

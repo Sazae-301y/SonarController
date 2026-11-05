@@ -27,6 +27,7 @@
     <sys:String x:Key="LicenseExpiredDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">体験期間が終了しました。製品版の購入をご検討ください。</sys:String>
     <sys:String x:Key="LicenseUnavailableDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ライセンス状態を確認できませんでした。時間をおいて再度ご確認ください。</sys:String>
     <sys:String x:Key="LicenseUnlicensedDetail" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Microsoft Storeで有効なライセンスを確認できませんでした。</sys:String>
+    <sys:String x:Key="LicensePurchaseButton" xmlns:sys="clr-namespace:System;assembly=System.Runtime">製品版を購入する</sys:String>
     <sys:String x:Key="Hotkey" xmlns:sys="clr-namespace:System;assembly=System.Runtime">グローバルホットキー</sys:String>
     <sys:String x:Key="Change" xmlns:sys="clr-namespace:System;assembly=System.Runtime">変更</sys:String>
     <sys:String x:Key="Devices" xmlns:sys="clr-namespace:System;assembly=System.Runtime">オーディオデバイス</sys:String>

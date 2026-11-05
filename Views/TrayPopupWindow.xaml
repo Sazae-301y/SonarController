@@ -472,7 +472,38 @@
                 <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF6B6B" TextWrapping="Wrap"
                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToBoolConverter}}"/>
                 <TextBlock Text="{Binding LicenseNoticeText}" Foreground="#FFD180" TextWrapping="Wrap"
-                           Visibility="{Binding IsLicenseBlocked, Converter={StaticResource BoolToVis}}"/>
+                           Visibility="{Binding IsLicenseBlocked, Converter={StaticResource BoolToVis}}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPurchaseUrgent}" Value="True">
+                                    <Setter Property="Foreground" Value="#FF6B6B"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <Button Content="{DynamicResource LicensePurchaseButton}"
+                        Command="{Binding OpenPurchasePageCommand}"
+                        HorizontalAlignment="Left" Margin="0,6,0,0" Padding="14,6"
+                        Cursor="Hand" FontWeight="SemiBold" Foreground="White"
+                        BorderThickness="0" Background="#6C5CE7">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowPurchasePrompt}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPurchaseUrgent}" Value="True">
+                                    <Setter Property="Background" Value="#E5484D"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </StackPanel>
 
             <!-- Device mix controls (left) and window buttons (right) -->
