@@ -155,6 +155,7 @@ public partial class App : Application
 
         // API Layer
         services.AddSingleton<SonarAddressResolver>();
+        services.AddSingleton<SteelSeriesPathService>();
         services.AddSingleton<SonarHttpClient>();
         services.AddSingleton<ISonarService, SonarService>();
         services.AddSingleton<IAudioEndpointVolumeService, AudioEndpointVolumeService>();

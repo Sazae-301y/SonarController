@@ -33,6 +33,21 @@ public partial class SettingsWindow : Window
         Activate();
     }
 
+    private void BrowseSteelSeriesPath_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            FileName = "SteelSeriesGG.exe",
+            Filter = "SteelSeries GG (SteelSeriesGG.exe)|SteelSeriesGG.exe|Executable files (*.exe)|*.exe",
+            CheckFileExists = true,
+            Multiselect = false
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        _viewModel.SelectedSteelSeriesExecutablePath = dialog.FileName;
+        _viewModel.SaveSteelSeriesPathCommand.Execute(null);
+    }
+
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Left && !e.Handled && Mouse.LeftButton == MouseButtonState.Pressed)

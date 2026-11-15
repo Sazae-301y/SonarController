@@ -38,6 +38,12 @@ public partial class SettingsViewModel : ViewModelBase
     private string _displayStatus = string.Empty;
 
     [ObservableProperty]
+    private string _selectedSteelSeriesExecutablePath = string.Empty;
+
+    [ObservableProperty]
+    private string _steelSeriesPathStatus = string.Empty;
+
+    [ObservableProperty]
     private LanguageOption? _selectedLanguage;
 
     [ObservableProperty]
@@ -81,6 +87,9 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly LanguageService _language;
     private readonly LicenseService _licenseService;
     private readonly IStartupService _startupService;
+    private readonly SteelSeriesPathService _steelSeriesPathService;
+    private string? _steelSeriesPathStatusKey;
+    private string? _steelSeriesPathStatusDetail;
 
     public SettingsViewModel(
         DevicesViewModel devicesViewModel,
@@ -89,14 +98,20 @@ public partial class SettingsViewModel : ViewModelBase
         InteractionModeService interactionMode,
         LanguageService language,
         LicenseService licenseService,
-        IStartupService startupService)
+        IStartupService startupService,
+        SteelSeriesPathService steelSeriesPathService)
     {
         _startupService = startupService;
+        _steelSeriesPathService = steelSeriesPathService;
+        _selectedSteelSeriesExecutablePath = steelSeriesPathService.ExecutablePath
+            ?? SteelSeriesPathService.GetSuggestedExecutablePath();
         Devices = devicesViewModel;
         _hotkeyService = hotkeyService;
         _displayPreferenceService = displayPreferenceService;
         InteractionMode = interactionMode;
         _language = language;
+        if (steelSeriesPathService.LoadError is not null)
+            SetSteelSeriesPathStatus("SteelSeriesPathLoadError", steelSeriesPathService.LoadError);
         _licenseService = licenseService;
         _licenseService.StatusChanged += (_, status) => UpdateLicenseDisplay(status);
         _selectedLanguage = _language.Languages.First(option => option.Code == _language.CurrentLanguage);
@@ -104,6 +119,7 @@ public partial class SettingsViewModel : ViewModelBase
         _language.LanguageChanged += (_, _) =>
         {
             RefreshDisplayOptions();
+            UpdateSteelSeriesPathStatus();
             DisplayStatus = string.Empty;
             if (IsCapturingHotkey)
                 HotkeyStatus = _language.GetString("HotkeyCapture");
@@ -242,6 +258,40 @@ public partial class SettingsViewModel : ViewModelBase
         if (_suppressEvents) return;
         _ = ApplyAutoStartAsync(value);
     }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void SaveSteelSeriesPath()
+    {
+        var result = _steelSeriesPathService.TrySetExecutablePath(
+            SelectedSteelSeriesExecutablePath, out var error);
+        switch (result)
+        {
+            case SteelSeriesPathSaveResult.Success:
+                SelectedSteelSeriesExecutablePath = _steelSeriesPathService.ExecutablePath ?? string.Empty;
+                SetSteelSeriesPathStatus("SteelSeriesPathSaved");
+                break;
+            case SteelSeriesPathSaveResult.InvalidPath:
+                SetSteelSeriesPathStatus("SteelSeriesPathInvalid");
+                break;
+            case SteelSeriesPathSaveResult.SaveFailed:
+                SetSteelSeriesPathStatus("SteelSeriesPathSaveError", error);
+                break;
+        }
+    }
+
+    private void SetSteelSeriesPathStatus(string? key, string? detail = null)
+    {
+        _steelSeriesPathStatusKey = key;
+        _steelSeriesPathStatusDetail = detail;
+        UpdateSteelSeriesPathStatus();
+    }
+
+    private void UpdateSteelSeriesPathStatus() =>
+        SteelSeriesPathStatus = _steelSeriesPathStatusKey is null
+            ? string.Empty
+            : _steelSeriesPathStatusDetail is null
+                ? _language.GetString(_steelSeriesPathStatusKey)
+                : string.Format(_language.GetString(_steelSeriesPathStatusKey), _steelSeriesPathStatusDetail);
 
     private async Task ApplyAutoStartAsync(bool enabled)
     {

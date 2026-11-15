@@ -242,9 +242,11 @@ public partial class TrayViewModel : ViewModelBase
             _needsReload = true;
             AppLog.Warn($"Lost connection to Sonar while polling: {ex.GetType().Name}");
         }
-        catch
+        catch (Exception ex)
         {
-            // ポーリング中のその他のエラーはUIに表示せず次回に持ち越す
+            ErrorMessage = SonarErrorMessages.Describe(ex, _language);
+            _needsReload = true;
+            AppLog.Warn($"Unexpected error while polling Sonar: {ex.GetType().Name}");
         }
     }
 

@@ -14,6 +14,10 @@
     <sys:String x:Key="TouchDescription">关闭后将使用适合鼠标操作的紧凑布局。</sys:String>
     <sys:String x:Key="Display">显示器</sys:String>
     <sys:String x:Key="DisplayDescription">弹出窗口优先显示的屏幕</sys:String>
+    <sys:String x:Key="SteelSeriesPath">SteelSeries GG 可执行文件</sys:String>
+    <sys:String x:Key="SteelSeriesPathDescription">如果 GG 安装在默认位置以外，请选择 SteelSeriesGG.exe。留空并保存后将自动搜索默认位置。</sys:String>
+    <sys:String x:Key="Browse">浏览...</sys:String>
+    <sys:String x:Key="Save">保存</sys:String>
     <sys:String x:Key="Version">版本信息</sys:String>
     <sys:String x:Key="LicenseTitle">许可证</sys:String>
     <sys:String x:Key="LicenseTrial">试用版</sys:String>
@@ -71,6 +75,10 @@
     <sys:String x:Key="DisplayLoadError">无法读取显示器设置：{0}</sys:String>
     <sys:String x:Key="DisplayNotConnectedError">所选显示器当前未连接。</sys:String>
     <sys:String x:Key="DisplayNotSaved">无法保存显示器设置。</sys:String>
+    <sys:String x:Key="SteelSeriesPathSaved">SteelSeries GG 路径已保存。</sys:String>
+    <sys:String x:Key="SteelSeriesPathInvalid">请选择有效的 SteelSeriesGG.exe 文件路径。</sys:String>
+    <sys:String x:Key="SteelSeriesPathLoadError">无法读取 SteelSeries GG 路径设置：{0}</sys:String>
+    <sys:String x:Key="SteelSeriesPathSaveError">无法保存 SteelSeries GG 路径设置：{0}</sys:String>
     <sys:String x:Key="TouchSaved">操作模式已保存。</sys:String>
     <sys:String x:Key="TouchLoadError">无法读取操作模式设置：{0}</sys:String>
     <sys:String x:Key="TouchSaveError">无法保存操作模式：{0}</sys:String>
@@ -82,12 +90,12 @@
     <sys:String x:Key="HotkeyMissingKey">请选择一个按键。</sys:String>
     <sys:String x:Key="HotkeyPersistenceError">无法保存快捷键设置：{0}</sys:String>
     <sys:String x:Key="HotkeyUnavailable">无法注册此按键，请选择其他按键。（{0}）</sys:String>
-    <sys:String x:Key="ErrorPrefix">发生错误：{0}</sys:String>
+    <sys:String x:Key="ErrorPrefix">与 Sonar 通信时发生意外错误。我们正在调查并计划修复。详细信息：{0}</sys:String>
     <sys:String x:Key="ModeChangeError">无法切换模式：{0}</sys:String>
     <sys:String x:Key="SonarGgNotRunning">SteelSeries GG 未运行，请启动 GG。</sys:String>
     <sys:String x:Key="SonarNotReady">GG 正在运行，但 Sonar 不可用。请在 GG 中启用 Sonar。</sys:String>
     <sys:String x:Key="SonarConnectionLost">与 Sonar 的连接已断开。GG 重启后将自动重新连接。</sys:String>
-    <sys:String x:Key="SonarApiError">Sonar API 返回错误 (HTTP {0})。请检查 GG 版本。</sys:String>
+    <sys:String x:Key="SonarApiError">Sonar API 返回错误 (HTTP {0})。这可能是兼容性问题，我们正在调查并计划修复。</sys:String>
     <sys:String x:Key="StartupDisabledByUser">已在 Windows“设置 > 应用 > 启动”中关闭，请在那里开启。</sys:String>
     <sys:String x:Key="StartupDisabledByPolicy">由于组织策略，无法更改开机启动。</sys:String>
     <sys:String x:Key="StartupFailed">无法更改开机启动设置。</sys:String>

@@ -363,6 +363,26 @@
                 </Border>
 
                 <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource SteelSeriesPath}" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4"/>
+                        <TextBlock Text="{DynamicResource SteelSeriesPathDescription}" Foreground="#758096"
+                                   FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                        <DockPanel LastChildFill="True">
+                            <Button Content="{DynamicResource Browse}" Click="BrowseSteelSeriesPath_Click"
+                                    DockPanel.Dock="Right" Margin="8,0,0,0" MinWidth="90"/>
+                            <Button Content="{DynamicResource Save}" Command="{Binding SaveSteelSeriesPathCommand}"
+                                    DockPanel.Dock="Right" Margin="8,0,0,0" MinWidth="70"/>
+                            <TextBox Text="{Binding SelectedSteelSeriesExecutablePath, UpdateSourceTrigger=PropertyChanged}"
+                                     VerticalContentAlignment="Center" Padding="9,5"
+                                     BorderBrush="#D8D2EB" BorderThickness="1" Background="#F8F7FC"
+                                     ToolTip="{DynamicResource SteelSeriesPathDescription}"/>
+                        </DockPanel>
+                        <TextBlock Text="{Binding SteelSeriesPathStatus}" Foreground="#758096"
+                                   FontSize="12" TextWrapping="Wrap" Margin="2,6,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>

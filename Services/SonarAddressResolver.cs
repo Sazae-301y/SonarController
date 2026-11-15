@@ -2,6 +2,7 @@ using System.IO;
 using System.Net.Http;
 using System.Diagnostics;
 using System.Text.Json;
+using SonarController.Helpers;
 
 namespace SonarController.Services;
 
@@ -17,8 +18,15 @@ public class SonarAddressResolver
     private static readonly HttpClient Http = CreateHttpClient();
 
     private readonly SemaphoreSlim _resolveGate = new(1, 1);
+    private readonly SteelSeriesPathService _steelSeriesPath;
     private volatile string? _cachedAddress;
     private bool _launchAttempted;
+
+    public SonarAddressResolver(SteelSeriesPathService steelSeriesPath)
+    {
+        _steelSeriesPath = steelSeriesPath;
+        _steelSeriesPath.ExecutablePathChanged += (_, _) => InvalidateCache();
+    }
 
     /// <summary>直近のアドレス解決に失敗した理由（GG未起動か、Sonar未準備か）。</summary>
     public SonarErrorKind LastFailure { get; private set; } = SonarErrorKind.GgNotRunning;
@@ -123,19 +131,15 @@ public class SonarAddressResolver
         }
     }
 
-    private static void TryStartSteelSeriesGg()
+    private void TryStartSteelSeriesGg()
     {
         if (IsGgRunning())
             return;
 
-        var candidates = new[]
-        {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SteelSeries", "GG", "SteelSeriesGG.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "SteelSeries", "GG", "SteelSeriesGG.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SteelSeries", "GG", "SteelSeriesGG.exe")
-        };
+        var candidates = new[] { _steelSeriesPath.ExecutablePath }
+            .Concat(SteelSeriesPathService.GetDefaultExecutablePaths());
 
-        var executablePath = candidates.FirstOrDefault(File.Exists);
+        var executablePath = candidates.FirstOrDefault(path => path is not null && File.Exists(path));
         if (executablePath is null)
             return;
 

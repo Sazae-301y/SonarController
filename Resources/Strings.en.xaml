@@ -14,6 +14,10 @@
     <sys:String x:Key="TouchDescription">Turn off for a compact layout designed for mouse use.</sys:String>
     <sys:String x:Key="Display">Display</sys:String>
     <sys:String x:Key="DisplayDescription">Screen used to show the popup</sys:String>
+    <sys:String x:Key="SteelSeriesPath">SteelSeries GG executable</sys:String>
+    <sys:String x:Key="SteelSeriesPathDescription">If GG is installed outside its default location, select SteelSeriesGG.exe. Leave blank and save to search the default locations automatically.</sys:String>
+    <sys:String x:Key="Browse">Browse...</sys:String>
+    <sys:String x:Key="Save">Save</sys:String>
     <sys:String x:Key="Version">Version</sys:String>
     <sys:String x:Key="LicenseTitle">License</sys:String>
     <sys:String x:Key="LicenseTrial">Trial</sys:String>
@@ -71,6 +75,10 @@
     <sys:String x:Key="DisplayLoadError">Could not load display preference: {0}</sys:String>
     <sys:String x:Key="DisplayNotConnectedError">The selected display is not currently connected.</sys:String>
     <sys:String x:Key="DisplayNotSaved">Could not save the display preference.</sys:String>
+    <sys:String x:Key="SteelSeriesPathSaved">SteelSeries GG path saved.</sys:String>
+    <sys:String x:Key="SteelSeriesPathInvalid">Select a valid SteelSeriesGG.exe file path.</sys:String>
+    <sys:String x:Key="SteelSeriesPathLoadError">Could not load the SteelSeries GG path setting: {0}</sys:String>
+    <sys:String x:Key="SteelSeriesPathSaveError">Could not save the SteelSeries GG path setting: {0}</sys:String>
     <sys:String x:Key="TouchSaved">Interaction mode saved.</sys:String>
     <sys:String x:Key="TouchLoadError">Could not load interaction mode: {0}</sys:String>
     <sys:String x:Key="TouchSaveError">Could not save interaction mode: {0}</sys:String>
@@ -82,12 +90,12 @@
     <sys:String x:Key="HotkeyMissingKey">Select a key.</sys:String>
     <sys:String x:Key="HotkeyPersistenceError">Could not save hotkey settings: {0}</sys:String>
     <sys:String x:Key="HotkeyUnavailable">Could not register this key. Choose another key. ({0})</sys:String>
-    <sys:String x:Key="ErrorPrefix">An error occurred: {0}</sys:String>
+    <sys:String x:Key="ErrorPrefix">An unexpected error occurred while communicating with Sonar. We are investigating and plan to fix it. Details: {0}</sys:String>
     <sys:String x:Key="ModeChangeError">Could not change mode: {0}</sys:String>
     <sys:String x:Key="SonarGgNotRunning">SteelSeries GG is not running. Please start GG.</sys:String>
     <sys:String x:Key="SonarNotReady">GG is running, but Sonar is not available. Enable Sonar in GG.</sys:String>
     <sys:String x:Key="SonarConnectionLost">Lost connection to Sonar. It will reconnect automatically after GG restarts.</sys:String>
-    <sys:String x:Key="SonarApiError">The Sonar API returned an error (HTTP {0}). Please check your GG version.</sys:String>
+    <sys:String x:Key="SonarApiError">The Sonar API returned an error (HTTP {0}). This may be a compatibility issue; we are investigating and plan to fix it.</sys:String>
     <sys:String x:Key="StartupDisabledByUser">Startup is turned off in Windows Settings > Apps > Startup. Turn it on there.</sys:String>
     <sys:String x:Key="StartupDisabledByPolicy">Startup cannot be changed because of an organization policy.</sys:String>
     <sys:String x:Key="StartupFailed">Could not change the startup setting.</sys:String>

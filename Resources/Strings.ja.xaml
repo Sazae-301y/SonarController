@@ -13,6 +13,10 @@
     <sys:String x:Key="TouchDescription" xmlns:sys="clr-namespace:System;assembly=System.Runtime">オフにすると、マウス操作向けのコンパクトな表示になります。</sys:String>
     <sys:String x:Key="Display" xmlns:sys="clr-namespace:System;assembly=System.Runtime">表示先ディスプレイ</sys:String>
     <sys:String x:Key="DisplayDescription" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ポップアップを優先して表示する画面</sys:String>
+    <sys:String x:Key="SteelSeriesPath" xmlns:sys="clr-namespace:System;assembly=System.Runtime">SteelSeries GG の実行ファイル</sys:String>
+    <sys:String x:Key="SteelSeriesPathDescription" xmlns:sys="clr-namespace:System;assembly=System.Runtime">GG を既定以外の場所にインストールしている場合は SteelSeriesGG.exe を指定してください。空欄にして保存すると既定の場所を自動検索します。</sys:String>
+    <sys:String x:Key="Browse" xmlns:sys="clr-namespace:System;assembly=System.Runtime">参照...</sys:String>
+    <sys:String x:Key="Save" xmlns:sys="clr-namespace:System;assembly=System.Runtime">保存</sys:String>
     <sys:String x:Key="Version" xmlns:sys="clr-namespace:System;assembly=System.Runtime">バージョン情報</sys:String>
     <sys:String x:Key="LicenseTitle" xmlns:sys="clr-namespace:System;assembly=System.Runtime">ライセンス</sys:String>
     <sys:String x:Key="LicenseTrial" xmlns:sys="clr-namespace:System;assembly=System.Runtime">体験版</sys:String>
@@ -70,6 +74,10 @@
     <sys:String x:Key="DisplayLoadError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">表示先の設定を読み込めませんでした: {0}</sys:String>
     <sys:String x:Key="DisplayNotConnectedError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">選択したディスプレイは現在接続されていません。</sys:String>
     <sys:String x:Key="DisplayNotSaved" xmlns:sys="clr-namespace:System;assembly=System.Runtime">表示先を保存できませんでした。</sys:String>
+    <sys:String x:Key="SteelSeriesPathSaved" xmlns:sys="clr-namespace:System;assembly=System.Runtime">SteelSeries GG のパスを保存しました。</sys:String>
+    <sys:String x:Key="SteelSeriesPathInvalid" xmlns:sys="clr-namespace:System;assembly=System.Runtime">SteelSeriesGG.exe の有効なファイルパスを指定してください。</sys:String>
+    <sys:String x:Key="SteelSeriesPathLoadError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">SteelSeries GG のパス設定を読み込めませんでした: {0}</sys:String>
+    <sys:String x:Key="SteelSeriesPathSaveError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">SteelSeries GG のパス設定を保存できませんでした: {0}</sys:String>
     <sys:String x:Key="TouchSaved" xmlns:sys="clr-namespace:System;assembly=System.Runtime">操作モードを保存しました。</sys:String>
     <sys:String x:Key="TouchLoadError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">操作モードの設定を読み込めませんでした: {0}</sys:String>
     <sys:String x:Key="TouchSaveError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">操作モードを保存できませんでした: {0}</sys:String>
@@ -81,12 +89,12 @@
     <sys:String x:Key="HotkeyMissingKey" xmlns:sys="clr-namespace:System;assembly=System.Runtime">キーを指定してください。</sys:String>
     <sys:String x:Key="HotkeyPersistenceError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">設定を保存できませんでした: {0}</sys:String>
     <sys:String x:Key="HotkeyUnavailable" xmlns:sys="clr-namespace:System;assembly=System.Runtime">このキーは登録できませんでした。別のキーを選んでください。({0})</sys:String>
-    <sys:String x:Key="ErrorPrefix" xmlns:sys="clr-namespace:System;assembly=System.Runtime">エラーが発生しました: {0}</sys:String>
+    <sys:String x:Key="ErrorPrefix" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Sonarとの通信中に予期しないエラーが発生しました。現在調査中で、修正予定です。詳細: {0}</sys:String>
     <sys:String x:Key="ModeChangeError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">モード切替に失敗しました: {0}</sys:String>
     <sys:String x:Key="SonarGgNotRunning" xmlns:sys="clr-namespace:System;assembly=System.Runtime">SteelSeries GG が起動していません。GG を起動してください。</sys:String>
     <sys:String x:Key="SonarNotReady" xmlns:sys="clr-namespace:System;assembly=System.Runtime">GG は起動していますが、Sonar が利用できません。GG で Sonar を有効にしてください。</sys:String>
     <sys:String x:Key="SonarConnectionLost" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Sonar との接続が切れました。GG の再起動後は自動的に再接続します。</sys:String>
-    <sys:String x:Key="SonarApiError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Sonar API がエラーを返しました (HTTP {0})。GG のバージョンを確認してください。</sys:String>
+    <sys:String x:Key="SonarApiError" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Sonar API がエラーを返しました (HTTP {0})。互換性の問題の可能性があり、現在調査中で修正予定です。</sys:String>
     <sys:String x:Key="StartupDisabledByUser" xmlns:sys="clr-namespace:System;assembly=System.Runtime">Windows の「設定 > アプリ > スタートアップ」で無効になっています。そちらで有効にしてください。</sys:String>
     <sys:String x:Key="StartupDisabledByPolicy" xmlns:sys="clr-namespace:System;assembly=System.Runtime">組織のポリシーにより、自動起動を変更できません。</sys:String>
     <sys:String x:Key="StartupFailed" xmlns:sys="clr-namespace:System;assembly=System.Runtime">自動起動の設定を変更できませんでした。</sys:String>
