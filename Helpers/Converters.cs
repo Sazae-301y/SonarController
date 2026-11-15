@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -40,10 +41,20 @@ public class InverseBoolToVisibilityConverter : IValueConverter
 /// <summary>"#RRGGBB" 形式の文字列を SolidColorBrush に変換する（チャンネルごとのアクセントカラー表示用）</summary>
 public class HexToBrushConverter : IValueConverter
 {
+    private static readonly ConcurrentDictionary<string, SolidColorBrush> BrushCache = new(StringComparer.OrdinalIgnoreCase);
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        => value is string hex && !string.IsNullOrEmpty(hex)
-            ? new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex))
-            : System.Windows.Media.Brushes.White;
+    {
+        if (value is not string hex || string.IsNullOrEmpty(hex))
+            return System.Windows.Media.Brushes.White;
+
+        return BrushCache.GetOrAdd(hex, static key =>
+        {
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(key));
+            brush.Freeze();
+            return brush;
+        });
+    }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotSupportedException();

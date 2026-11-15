@@ -15,6 +15,9 @@ public static class AppLog
 
     private const string FileName = "app.log";
     private static readonly object Gate = new();
+    private static readonly string UserProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    private static readonly string CurrentUserName = Environment.UserName;
+    private static readonly string CurrentMachineName = Environment.MachineName;
 
     private static string? _directory;
     private static long _maxFileBytes = DefaultMaxFileBytes;
@@ -52,18 +55,15 @@ public static class AppLog
         if (string.IsNullOrEmpty(text)) return text;
 
         var result = text;
-        var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        if (!string.IsNullOrEmpty(profile))
-            result = result.Replace(profile, "%USERPROFILE%", StringComparison.OrdinalIgnoreCase);
+        if (!string.IsNullOrEmpty(UserProfilePath))
+            result = result.Replace(UserProfilePath, "%USERPROFILE%", StringComparison.OrdinalIgnoreCase);
 
-        var user = Environment.UserName;
         // 短い名前は一般的な語を壊すためマスク対象外
-        if (user.Length >= 3)
-            result = result.Replace(user, "<user>", StringComparison.OrdinalIgnoreCase);
+        if (CurrentUserName.Length >= 3)
+            result = result.Replace(CurrentUserName, "<user>", StringComparison.OrdinalIgnoreCase);
 
-        var machine = Environment.MachineName;
-        if (machine.Length >= 3)
-            result = result.Replace(machine, "<machine>", StringComparison.OrdinalIgnoreCase);
+        if (CurrentMachineName.Length >= 3)
+            result = result.Replace(CurrentMachineName, "<machine>", StringComparison.OrdinalIgnoreCase);
 
         return result;
     }

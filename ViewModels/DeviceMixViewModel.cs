@@ -16,6 +16,7 @@ public partial class DeviceMixViewModel : ViewModelBase
     private readonly LanguageService _language;
     private readonly string _displayNameKey;
     private bool _suppressEvents;
+    private bool _isRefreshingDevices;
 
     public string DisplayName => _language.GetString(_displayNameKey);
     public AudioDataFlow DataFlow => _isInput ? AudioDataFlow.Capture : AudioDataFlow.Render;
@@ -69,16 +70,60 @@ public partial class DeviceMixViewModel : ViewModelBase
         return !_isInput && _mix == SonarMix.Stream && d.Role == "stream";
     }
 
-    public async Task LoadAsync(IReadOnlyList<AudioDevice> devices, CancellationToken ct = default)
+    public void Load(IReadOnlyList<AudioDevice> devices, string? selectedDeviceId)
     {
         _suppressEvents = true;
         Devices.Clear();
         foreach (var device in devices.Where(IsSelectable))
             Devices.Add(device);
 
-        SelectedDevice = await _sonar.GetSelectedDeviceAsync(DataFlow, _mix, ct);
+        SelectedDevice = selectedDeviceId is null
+            ? null
+            : Devices.FirstOrDefault(device => device.Id == selectedDeviceId);
         Volume = SelectedDevice is null ? 0.0 : _endpointVolume.GetVolume(SelectedDevice);
         _suppressEvents = false;
+    }
+
+    public async Task LoadAsync(IReadOnlyList<AudioDevice> devices, CancellationToken ct = default)
+    {
+        var selectedDevice = await _sonar.GetSelectedDeviceAsync(DataFlow, _mix, ct);
+        Load(devices, selectedDevice?.Id);
+    }
+
+    public async Task RefreshDevicesAsync(CancellationToken ct = default)
+    {
+        if (_isRefreshingDevices) return;
+
+        _isRefreshingDevices = true;
+        try
+        {
+            var devices = await _sonar.GetAudioDevicesAsync(ct);
+            var selectedDeviceId = SelectedDevice?.Id;
+
+            _suppressEvents = true;
+            try
+            {
+                Devices.Clear();
+                foreach (var device in devices.Where(IsSelectable))
+                    Devices.Add(device);
+
+                var selectedDevice = selectedDeviceId is null
+                    ? null
+                    : Devices.FirstOrDefault(device => device.Id == selectedDeviceId);
+                SelectedDevice = null;
+                SelectedDevice = selectedDevice;
+                if (selectedDevice is null)
+                    Volume = 0.0;
+            }
+            finally
+            {
+                _suppressEvents = false;
+            }
+        }
+        finally
+        {
+            _isRefreshingDevices = false;
+        }
     }
 
     private async Task SetDeviceAsync(AudioDevice device)

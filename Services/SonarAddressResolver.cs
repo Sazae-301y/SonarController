@@ -16,7 +16,8 @@ public class SonarAddressResolver
     private static readonly TimeSpan StartupRetryDelay = TimeSpan.FromMilliseconds(500);
     private static readonly HttpClient Http = CreateHttpClient();
 
-    private string? _cachedAddress;
+    private readonly SemaphoreSlim _resolveGate = new(1, 1);
+    private volatile string? _cachedAddress;
     private bool _launchAttempted;
 
     /// <summary>直近のアドレス解決に失敗した理由（GG未起動か、Sonar未準備か）。</summary>
@@ -28,46 +29,57 @@ public class SonarAddressResolver
     /// </summary>
     public async Task<string?> GetWebServerAddressAsync()
     {
-        if (_cachedAddress is not null)
-            return _cachedAddress;
+        if (_cachedAddress is { } cached)
+            return cached;
 
-        var address = await TryResolveAddressAsync();
-        if (address is not null)
-            return _cachedAddress = address;
-
-        if (!_launchAttempted)
+        await _resolveGate.WaitAsync();
+        try
         {
-            _launchAttempted = true;
-            TryStartSteelSeriesGg();
-        }
+            if (_cachedAddress is { } doubleChecked)
+                return doubleChecked;
 
-        // GG が起動していない（起動もできない）場合は、待たずに結果を返す
-        if (!IsGgRunning())
-        {
-            LastFailure = SonarErrorKind.GgNotRunning;
-            return null;
-        }
-
-        var deadline = DateTime.UtcNow + StartupWaitTimeout;
-        while (DateTime.UtcNow < deadline)
-        {
-            await Task.Delay(StartupRetryDelay);
-            address = await TryResolveAddressAsync();
+            var address = await TryResolveAddressAsync();
             if (address is not null)
+                return _cachedAddress = address;
+
+            if (!_launchAttempted)
             {
-                _cachedAddress = address;
-                return address;
+                _launchAttempted = true;
+                TryStartSteelSeriesGg();
             }
 
+            // GG が起動していない（起動もできない）場合は、待たずに結果を返す
             if (!IsGgRunning())
             {
                 LastFailure = SonarErrorKind.GgNotRunning;
                 return null;
             }
-        }
 
-        LastFailure = SonarErrorKind.SonarNotReady;
-        return null;
+            var deadline = DateTime.UtcNow + StartupWaitTimeout;
+            while (DateTime.UtcNow < deadline)
+            {
+                await Task.Delay(StartupRetryDelay);
+                address = await TryResolveAddressAsync();
+                if (address is not null)
+                {
+                    _cachedAddress = address;
+                    return address;
+                }
+
+                if (!IsGgRunning())
+                {
+                    LastFailure = SonarErrorKind.GgNotRunning;
+                    return null;
+                }
+            }
+
+            LastFailure = SonarErrorKind.SonarNotReady;
+            return null;
+        }
+        finally
+        {
+            _resolveGate.Release();
+        }
     }
 
     private static bool IsGgRunning()
@@ -113,7 +125,7 @@ public class SonarAddressResolver
 
     private static void TryStartSteelSeriesGg()
     {
-        if (Process.GetProcessesByName("SteelSeriesGG").Length > 0)
+        if (IsGgRunning())
             return;
 
         var candidates = new[]

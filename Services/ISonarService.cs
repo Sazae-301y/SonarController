@@ -2,6 +2,12 @@ using SonarController.Models;
 
 namespace SonarController.Services;
 
+public sealed record StreamRedirectionsSnapshot(
+    IReadOnlyDictionary<(SonarChannel Channel, SonarMix Mix), bool> RoutingStatuses,
+    string? PersonalDeviceId,
+    string? StreamDeviceId,
+    string? MicDeviceId);
+
 /// <summary>
 /// Sonar API の抽象化レイヤー
 /// ViewModel はこのインターフェースのみを参照し、API の詳細を知らない
@@ -14,20 +20,23 @@ public interface ISonarService
 
     // ---- Volume / Mute (Classic) ----
     Task<VolumeSettings> GetVolumeAsync(SonarChannel channel, CancellationToken ct = default);
+    Task<IReadOnlyDictionary<SonarChannel, VolumeSettings>> GetAllClassicVolumesAsync(CancellationToken ct = default);
     Task SetVolumeAsync(SonarChannel channel, double volume, CancellationToken ct = default);
     Task SetMuteAsync(SonarChannel channel, bool muted, CancellationToken ct = default);
 
     // ---- Volume / Mute (Streamer) ----
     Task<VolumeSettings> GetVolumeAsync(SonarChannel channel, SonarMix mix, CancellationToken ct = default);
+    Task<IReadOnlyDictionary<SonarChannel, (VolumeSettings Personal, VolumeSettings Stream)>> GetAllStreamerVolumesAsync(CancellationToken ct = default);
     Task SetVolumeAsync(SonarChannel channel, SonarMix mix, double volume, CancellationToken ct = default);
     Task SetMuteAsync(SonarChannel channel, SonarMix mix, bool muted, CancellationToken ct = default);
 
-    // ---- Routing (Streamer) ----
+    // ---- Routing / Selected Devices ----
     /// <summary>
     /// 各チャンネルがPersonal/Streamの各ミックスへルーティングされているか（ミュートとは独立した設定）を一括取得する。
     /// Master チャンネルはルーティング対象外のためキーに含まれない。
     /// </summary>
     Task<IReadOnlyDictionary<(SonarChannel Channel, SonarMix Mix), bool>> GetRoutingStatusesAsync(CancellationToken ct = default);
+    Task<StreamRedirectionsSnapshot> GetStreamRedirectionsAsync(CancellationToken ct = default);
     Task SetRoutingAsync(SonarChannel channel, SonarMix mix, bool enabled, CancellationToken ct = default);
 
     // ---- EQ Configs ----
@@ -35,7 +44,9 @@ public interface ISonarService
     /// お気に入り登録済みの EQ プリセットを取得（isFavorite == true のみ）
     /// </summary>
     Task<IReadOnlyList<EqConfig>> GetFavoriteEqConfigsAsync(SonarChannel channel, CancellationToken ct = default);
+    Task<IReadOnlyDictionary<SonarChannel, IReadOnlyList<EqConfig>>> GetAllFavoriteEqConfigsAsync(CancellationToken ct = default);
     Task<EqConfig?> GetSelectedEqConfigAsync(SonarChannel channel, CancellationToken ct = default);
+    Task<IReadOnlyDictionary<SonarChannel, EqConfig>> GetAllSelectedEqConfigsAsync(CancellationToken ct = default);
     Task SetEqConfigAsync(string configId, CancellationToken ct = default);
 
     // ---- Devices ----

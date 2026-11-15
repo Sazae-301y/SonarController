@@ -28,10 +28,10 @@ public class SonarHttpClient : IDisposable
     {
         return await SendWithAddressRefreshAsync(async url =>
         {
-            using var response = await _http.GetAsync(url, ct);
+            using var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
             response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync(ct);
-            return JsonDocument.Parse(json);
+            await using var stream = await response.Content.ReadAsStreamAsync(ct);
+            return await JsonDocument.ParseAsync(stream, cancellationToken: ct);
         }, path, ct);
     }
 

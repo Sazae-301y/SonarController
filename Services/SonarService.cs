@@ -11,6 +11,8 @@ namespace SonarController.Services;
 /// </summary>
 public class SonarService : ISonarService
 {
+    private static readonly SonarChannel[] AllChannels = Enum.GetValues<SonarChannel>();
+
     private readonly SonarHttpClient _http;
     private readonly SonarAddressResolver _resolver;
     private readonly LicenseService _license;
@@ -69,6 +71,28 @@ public class SonarService : ISonarService
         }
     }
 
+    public async Task<IReadOnlyDictionary<SonarChannel, VolumeSettings>> GetAllClassicVolumesAsync(
+        CancellationToken ct = default)
+    {
+        using var doc = await _http.GetAsync("volumeSettings/classic/", ct);
+        var root = doc.RootElement;
+        var masters = root.GetProperty("masters").GetProperty("classic");
+        var devices = root.GetProperty("devices");
+
+        var result = new Dictionary<SonarChannel, VolumeSettings>(AllChannels.Length);
+        foreach (var channel in AllChannels)
+        {
+            var entry = channel == SonarChannel.Master
+                ? masters
+                : devices.GetProperty(channel.ToJsonKey()).GetProperty("classic");
+            result[channel] = new VolumeSettings(
+                entry.GetProperty("volume").GetDouble(),
+                entry.GetProperty("muted").GetBoolean());
+        }
+
+        return result;
+    }
+
     public async Task SetVolumeAsync(SonarChannel channel, double volume, CancellationToken ct = default)
     {
         _license.EnsureUsable();
@@ -111,6 +135,33 @@ public class SonarService : ISonarService
         }
     }
 
+    public async Task<IReadOnlyDictionary<SonarChannel, (VolumeSettings Personal, VolumeSettings Stream)>> GetAllStreamerVolumesAsync(
+        CancellationToken ct = default)
+    {
+        using var doc = await _http.GetAsync("volumeSettings/streamer/", ct);
+        var root = doc.RootElement;
+        var masters = root.GetProperty("masters").GetProperty("stream");
+        var devices = root.GetProperty("devices");
+        var personalKey = SonarMix.Personal.ToHttpKey();
+        var streamKey = SonarMix.Stream.ToHttpKey();
+
+        var result = new Dictionary<SonarChannel, (VolumeSettings Personal, VolumeSettings Stream)>(AllChannels.Length);
+        foreach (var channel in AllChannels)
+        {
+            var entry = channel == SonarChannel.Master
+                ? masters
+                : devices.GetProperty(channel.ToJsonKey()).GetProperty("stream");
+            var personalEl = entry.GetProperty(personalKey);
+            var streamEl = entry.GetProperty(streamKey);
+
+            result[channel] = (
+                new VolumeSettings(personalEl.GetProperty("volume").GetDouble(), personalEl.GetProperty("muted").GetBoolean()),
+                new VolumeSettings(streamEl.GetProperty("volume").GetDouble(), streamEl.GetProperty("muted").GetBoolean()));
+        }
+
+        return result;
+    }
+
     public async Task SetVolumeAsync(SonarChannel channel, SonarMix mix, double volume, CancellationToken ct = default)
     {
         _license.EnsureUsable();
@@ -136,21 +187,36 @@ public class SonarService : ISonarService
 
     public async Task<IReadOnlyDictionary<(SonarChannel Channel, SonarMix Mix), bool>> GetRoutingStatusesAsync(
         CancellationToken ct = default)
+        => (await GetStreamRedirectionsAsync(ct)).RoutingStatuses;
+
+    public async Task<StreamRedirectionsSnapshot> GetStreamRedirectionsAsync(CancellationToken ct = default)
     {
         using var doc = await _http.GetAsync("streamRedirections", ct);
-        var result = new Dictionary<(SonarChannel, SonarMix), bool>();
+        var routing = new Dictionary<(SonarChannel, SonarMix), bool>();
+        string? personalDeviceId = null;
+        string? streamDeviceId = null;
+        string? micDeviceId = null;
 
         foreach (var item in doc.RootElement.EnumerateArray())
         {
             var redirectionId = item.GetProperty("streamRedirectionId").GetString();
-            var mix = redirectionId switch
+            var deviceId = item.TryGetProperty("deviceId", out var devIdProp) ? devIdProp.GetString() : null;
+            switch (redirectionId)
             {
-                "monitoring" => SonarMix.Personal,
-                "streaming" => SonarMix.Stream,
-                _ => (SonarMix?)null
-            };
-            if (mix is null) continue; // "mic" 等、チャンネル別ルーティング以外の要素は無視
+                case "monitoring":
+                    personalDeviceId = deviceId;
+                    break;
+                case "streaming":
+                    streamDeviceId = deviceId;
+                    break;
+                case "mic":
+                    micDeviceId = deviceId;
+                    continue;
+                default:
+                    continue;
+            }
 
+            var mix = redirectionId == "monitoring" ? SonarMix.Personal : SonarMix.Stream;
             if (!item.TryGetProperty("status", out var status)) continue;
             foreach (var role in status.EnumerateArray())
             {
@@ -158,11 +224,11 @@ public class SonarService : ISonarService
                 var channel = RoleKeyToChannel(roleKey);
                 if (channel is null) continue;
 
-                result[(channel.Value, mix.Value)] = role.GetProperty("isEnabled").GetBoolean();
+                routing[(channel.Value, mix)] = role.GetProperty("isEnabled").GetBoolean();
             }
         }
 
-        return result;
+        return new StreamRedirectionsSnapshot(routing, personalDeviceId, streamDeviceId, micDeviceId);
     }
 
     public async Task SetRoutingAsync(SonarChannel channel, SonarMix mix, bool enabled, CancellationToken ct = default)
@@ -214,7 +280,45 @@ public class SonarService : ISonarService
 
         // favoritePosition 順に並べる
         results.Sort((a, b) => a.FavoritePosition.CompareTo(b.FavoritePosition));
-        return results.AsReadOnly();
+        return results;
+    }
+
+    public async Task<IReadOnlyDictionary<SonarChannel, IReadOnlyList<EqConfig>>> GetAllFavoriteEqConfigsAsync(
+        CancellationToken ct = default)
+    {
+        using var doc = await _http.GetAsync("configs", ct);
+        var grouped = new Dictionary<SonarChannel, List<EqConfig>>();
+
+        foreach (var item in doc.RootElement.EnumerateArray())
+        {
+            if (!item.GetProperty("isFavorite").GetBoolean()) continue;
+
+            var channel = RoleKeyToChannel(item.GetProperty("virtualAudioDevice").GetString());
+            if (channel is null) continue;
+
+            if (!grouped.TryGetValue(channel.Value, out var list))
+            {
+                list = [];
+                grouped[channel.Value] = list;
+            }
+
+            list.Add(new EqConfig(
+                Id:               item.GetProperty("id").GetString()!,
+                Name:             item.GetProperty("name").GetString()!,
+                Channel:          channel.Value,
+                IsFavorite:       true,
+                FavoritePosition: item.GetProperty("favoritePosition").GetInt32()
+            ));
+        }
+
+        var result = new Dictionary<SonarChannel, IReadOnlyList<EqConfig>>(grouped.Count);
+        foreach (var (channel, list) in grouped)
+        {
+            list.Sort((a, b) => a.FavoritePosition.CompareTo(b.FavoritePosition));
+            result[channel] = list;
+        }
+
+        return result;
     }
 
     public async Task<EqConfig?> GetSelectedEqConfigAsync(SonarChannel channel, CancellationToken ct = default)
@@ -241,6 +345,32 @@ public class SonarService : ISonarService
         }
 
         return null;
+    }
+
+    public async Task<IReadOnlyDictionary<SonarChannel, EqConfig>> GetAllSelectedEqConfigsAsync(
+        CancellationToken ct = default)
+    {
+        using var doc = await _http.GetAsync("configs/selected", ct);
+        var result = new Dictionary<SonarChannel, EqConfig>();
+
+        foreach (var item in doc.RootElement.EnumerateArray())
+        {
+            var channel = RoleKeyToChannel(item.GetProperty("virtualAudioDevice").GetString());
+            if (channel is null || result.ContainsKey(channel.Value)) continue;
+
+            var isFav = item.TryGetProperty("isFavorite", out var fav) && fav.GetBoolean();
+            var favPos = item.TryGetProperty("favoritePosition", out var fp) ? fp.GetInt32() : -1;
+
+            result[channel.Value] = new EqConfig(
+                Id:               item.GetProperty("id").GetString()!,
+                Name:             item.GetProperty("name").GetString()!,
+                Channel:          channel.Value,
+                IsFavorite:       isFav,
+                FavoritePosition: favPos
+            );
+        }
+
+        return result;
     }
 
     public async Task SetEqConfigAsync(string configId, CancellationToken ct = default)

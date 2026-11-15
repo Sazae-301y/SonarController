@@ -252,7 +252,7 @@ public partial class ChannelViewModel : ViewModelBase
     private void LoadEqState(IReadOnlyList<EqConfig> eqConfigs, EqConfig? selectedEq)
     {
         EqConfigs.Clear();
-        foreach (var eq in eqConfigs)
+        foreach (var eq in eqConfigs.OrderBy(eq => eq.FavoritePosition))
             EqConfigs.Add(eq);
         SelectedEqConfig = selectedEq;
     }

@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:helpers="clr-namespace:SonarController.Helpers"
+        xmlns:views="clr-namespace:SonarController.Views"
         Title="SonarController"
         Icon="pack://application:,,,/Assets/SonarController-App.ico"
         SizeToContent="WidthAndHeight"
@@ -76,12 +77,53 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="PopupScrollBarStyle" TargetType="ScrollBar">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Track x:Name="PART_Track" Orientation="{TemplateBinding Orientation}"
+                               Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}"
+                               ViewportSize="{TemplateBinding ViewportSize}" Value="{TemplateBinding Value}"
+                               IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Border x:Name="ThumbBackground" Margin="1" CornerRadius="3"
+                                                    Background="#706A80"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ThumbBackground" Property="Background" Value="#9B86F5"/>
+                                                </Trigger>
+                                                <Trigger Property="IsDragging" Value="True">
+                                                    <Setter TargetName="ThumbBackground" Property="Background" Value="#B4A5FF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
             <Setter Property="Foreground" Value="#F0F0F0"/>
             <Setter Property="Background" Value="#22212B"/>
             <Setter Property="BorderBrush" Value="#514D63"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="ItemContainerStyle" Value="{StaticResource AudioDeviceItemStyle}"/>
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
@@ -122,19 +164,35 @@
                                               ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"/>
                             <Popup x:Name="PART_Popup"
                                    IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
-                                   Placement="Bottom" AllowsTransparency="True" Focusable="False"
-                                   PopupAnimation="Fade" VerticalOffset="4">
+                                   Placement="Top"
+                                   PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                   AllowsTransparency="True" Focusable="False"
+                                   PopupAnimation="Fade" VerticalOffset="-4">
                                 <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                         MaxHeight="280" Background="#201F28" BorderBrush="#514D63"
                                         BorderThickness="1" CornerRadius="10" Padding="5">
                                     <ScrollViewer CanContentScroll="False" MaxHeight="270"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled"
                                                   PanningMode="VerticalOnly" PanningDeceleration="0.001"
-                                                  PanningRatio="1" IsDeferredScrollingEnabled="False">
+                                                  PanningRatio="1" IsDeferredScrollingEnabled="False"
+                                                  PreviewMouseWheel="DropdownScrollViewer_PreviewMouseWheel"
+                                                  PreviewTouchDown="DropdownScrollViewer_PreviewTouchDown">
+                                        <ScrollViewer.Resources>
+                                            <Style TargetType="ScrollBar"
+                                                   BasedOn="{StaticResource PopupScrollBarStyle}"/>
+                                        </ScrollViewer.Resources>
                                         <ItemsPresenter/>
                                     </ScrollViewer>
                                 </Border>
                             </Popup>
                         </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Tag" Value="OpenDown">
+                                <Setter TargetName="PART_Popup" Property="Placement" Value="Bottom"/>
+                                <Setter TargetName="PART_Popup" Property="VerticalOffset" Value="4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -531,9 +589,11 @@
                                     <Grid.RenderTransform>
                                         <TranslateTransform X="-14"/>
                                     </Grid.RenderTransform>
-                                    <ComboBox ItemsSource="{Binding Devices}"
+                                    <views:DropdownComboBox ItemsSource="{Binding Devices}"
                                               SelectedItem="{Binding SelectedDevice}"
                                               DisplayMemberPath="FriendlyName"
+                                              Tag="OpenDown"
+                                              DropDownOpened="DeviceComboBox_DropDownOpened"
                                               Style="{StaticResource ModernComboBoxStyle}"/>
                                     <TextBlock Text="{DynamicResource Unconnected}" Foreground="#FF6B6B"
                                                Margin="12,0,38,0" VerticalAlignment="Center"
@@ -651,7 +711,7 @@
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <ComboBox ItemsSource="{Binding EqConfigs}" SelectedItem="{Binding SelectedEqConfig}"
+                                    <views:DropdownComboBox ItemsSource="{Binding EqConfigs}" SelectedItem="{Binding SelectedEqConfig}"
                                               DisplayMemberPath="Name" Margin="0,12,0,0"
                                               Visibility="{Binding HasEq, Converter={StaticResource BoolToVis}}"
                                               Style="{StaticResource ModernComboBoxStyle}"/>

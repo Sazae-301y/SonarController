@@ -105,17 +105,23 @@ public partial class TrayViewModel : ViewModelBase
             }
 
             var mode = await _sonar.GetModeAsync();
+            var audienceMonitoringTask = _sonar.GetAudienceMonitoringAsync();
+            var devicesTask = _sonar.GetAudioDevicesAsync();
+            var redirectionsTask = _sonar.GetStreamRedirectionsAsync();
+            await Task.WhenAll(audienceMonitoringTask, devicesTask, redirectionsTask);
 
             _suppressEvents = true;
             IsStreamerMode = mode == SonarMode.Streamer;
-            AudienceMonitoring = await _sonar.GetAudienceMonitoringAsync();
+            AudienceMonitoring = await audienceMonitoringTask;
             _suppressEvents = false;
 
-            var devices = await _sonar.GetAudioDevicesAsync();
-            foreach (var deviceMix in DeviceMixes)
-                await deviceMix.LoadAsync(devices);
+            var devices = await devicesTask;
+            var redirections = await redirectionsTask;
+            DeviceMixes[0].Load(devices, redirections.PersonalDeviceId);
+            DeviceMixes[1].Load(devices, redirections.StreamDeviceId);
+            DeviceMixes[2].Load(devices, redirections.MicDeviceId);
 
-            await LoadChannelsAsync();
+            await LoadChannelsAsync(redirections.RoutingStatuses);
         }
         catch (Exception ex)
         {
@@ -129,33 +135,70 @@ public partial class TrayViewModel : ViewModelBase
         }
     }
 
-    private async Task LoadChannelsAsync()
+    public async Task RefreshDevicesAsync(DeviceMixViewModel deviceMix)
     {
-        var routing = IsStreamerMode
-            ? await _sonar.GetRoutingStatusesAsync()
-            : null;
-
-        foreach (var vm in Channels)
+        try
         {
-            var eqConfigs = vm.HasEq
-                ? await _sonar.GetFavoriteEqConfigsAsync(vm.Channel)
-                : Array.Empty<EqConfig>();
-            var selectedEq = vm.HasEq
-                ? await _sonar.GetSelectedEqConfigAsync(vm.Channel)
-                : null;
+            await deviceMix.RefreshDevicesAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = SonarErrorMessages.Describe(ex, _language);
+            AppLog.Warn($"Failed to refresh audio devices: {ex.GetType().Name}");
+        }
+    }
 
-            if (IsStreamerMode)
+    private async Task LoadChannelsAsync(
+        IReadOnlyDictionary<(SonarChannel Channel, SonarMix Mix), bool>? routing = null)
+    {
+        var eqConfigsTask = _sonar.GetAllFavoriteEqConfigsAsync();
+        var selectedEqsTask = _sonar.GetAllSelectedEqConfigsAsync();
+
+        if (IsStreamerMode)
+        {
+            var routingTask = routing is null
+                ? _sonar.GetRoutingStatusesAsync()
+                : Task.FromResult(routing);
+            var volumesTask = _sonar.GetAllStreamerVolumesAsync();
+            await Task.WhenAll(eqConfigsTask, selectedEqsTask, routingTask, volumesTask);
+
+            var eqConfigsByChannel = await eqConfigsTask;
+            var selectedEqByChannel = await selectedEqsTask;
+            var resolvedRouting = await routingTask;
+            var volumes = await volumesTask;
+
+            foreach (var vm in Channels)
             {
-                var personal = await _sonar.GetVolumeAsync(vm.Channel, SonarMix.Personal);
-                var stream = await _sonar.GetVolumeAsync(vm.Channel, SonarMix.Stream);
-                var personalRouted = !vm.HasRouting || (routing!.TryGetValue((vm.Channel, SonarMix.Personal), out var pr) && pr);
-                var streamRouted = !vm.HasRouting || (routing!.TryGetValue((vm.Channel, SonarMix.Stream), out var sr) && sr);
+                var eqConfigs = vm.HasEq && eqConfigsByChannel.TryGetValue(vm.Channel, out var list)
+                    ? list
+                    : Array.Empty<EqConfig>();
+                var selectedEq = vm.HasEq && selectedEqByChannel.TryGetValue(vm.Channel, out var eq)
+                    ? eq
+                    : null;
+                var (personal, stream) = volumes[vm.Channel];
+                var personalRouted = !vm.HasRouting || (resolvedRouting.TryGetValue((vm.Channel, SonarMix.Personal), out var pr) && pr);
+                var streamRouted = !vm.HasRouting || (resolvedRouting.TryGetValue((vm.Channel, SonarMix.Stream), out var sr) && sr);
                 vm.LoadStreamerState(personal, stream, personalRouted, streamRouted, eqConfigs, selectedEq);
             }
-            else
+        }
+        else
+        {
+            var volumesTask = _sonar.GetAllClassicVolumesAsync();
+            await Task.WhenAll(eqConfigsTask, selectedEqsTask, volumesTask);
+
+            var eqConfigsByChannel = await eqConfigsTask;
+            var selectedEqByChannel = await selectedEqsTask;
+            var volumes = await volumesTask;
+
+            foreach (var vm in Channels)
             {
-                var vol = await _sonar.GetVolumeAsync(vm.Channel);
-                vm.LoadClassicState(vol, eqConfigs, selectedEq);
+                var eqConfigs = vm.HasEq && eqConfigsByChannel.TryGetValue(vm.Channel, out var list)
+                    ? list
+                    : Array.Empty<EqConfig>();
+                var selectedEq = vm.HasEq && selectedEqByChannel.TryGetValue(vm.Channel, out var eq)
+                    ? eq
+                    : null;
+                vm.LoadClassicState(volumes[vm.Channel], eqConfigs, selectedEq);
             }
         }
     }
@@ -177,19 +220,20 @@ public partial class TrayViewModel : ViewModelBase
 
         try
         {
-            foreach (var vm in Channels)
+            if (IsStreamerMode)
             {
-                if (IsStreamerMode)
+                var volumes = await _sonar.GetAllStreamerVolumesAsync();
+                foreach (var vm in Channels)
                 {
-                    var personal = await _sonar.GetVolumeAsync(vm.Channel, SonarMix.Personal);
-                    var stream = await _sonar.GetVolumeAsync(vm.Channel, SonarMix.Stream);
+                    var (personal, stream) = volumes[vm.Channel];
                     vm.RefreshStreamerVolumes(personal, stream);
                 }
-                else
-                {
-                    var vol = await _sonar.GetVolumeAsync(vm.Channel);
-                    vm.RefreshClassicVolume(vol);
-                }
+            }
+            else
+            {
+                var volumes = await _sonar.GetAllClassicVolumesAsync();
+                foreach (var vm in Channels)
+                    vm.RefreshClassicVolume(volumes[vm.Channel]);
             }
         }
         catch (Exception ex) when (ex is SonarNotAvailableException or SonarApiException)
