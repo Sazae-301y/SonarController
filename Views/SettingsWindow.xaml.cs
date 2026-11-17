@@ -72,12 +72,10 @@ public partial class SettingsWindow : Window
         _viewModel.CaptureHotkey(Keyboard.Modifiers, key);
     }
 
-    // 常駐アプリのため、設定ウィンドウは閉じるだけでプロセスは終了させない
+    // 閉じたウィンドウは破棄する(App側で次回表示時に作り直す)。プロセスはトレイに常駐し続ける
     protected override void OnClosing(CancelEventArgs e)
     {
         _viewModel.CancelHotkeyCapture();
         base.OnClosing(e);
-        Hide();
-        e.Cancel = true;
     }
 }

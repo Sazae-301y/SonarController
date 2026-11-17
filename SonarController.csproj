@@ -12,9 +12,10 @@
     <Platforms>x64</Platforms>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
-    <!-- Cursor.Position / Screen.WorkingArea をトレイポップアップの位置決めに使用 -->
-    <UseWindowsForms>true</UseWindowsForms>
     <SelfContained>true</SelfContained>
+    <!-- 常駐メモリ削減: バックグラウンドGCスレッドと動的PGOの計測バッファを使わない -->
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <TieredPGO>false</TieredPGO>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>

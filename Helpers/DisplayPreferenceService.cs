@@ -1,7 +1,6 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using System.Windows.Forms;
 
 namespace SonarController.Helpers;
 
@@ -15,7 +14,7 @@ public sealed class DisplayPreferenceService
         "SonarController",
         "display-settings.json");
 
-    private sealed record MonitorInfo(Screen Screen, string Id, string Name);
+    private sealed record MonitorInfo(ScreenInfo Screen, string Id, string Name);
 
     private string? _preferredId;
     private string? _preferredName;
@@ -60,7 +59,7 @@ public sealed class DisplayPreferenceService
         return options;
     }
 
-    public Screen GetDisplayForPopup(System.Drawing.Point cursorPosition)
+    public ScreenInfo GetDisplayForPopup(PixelPoint cursorPosition)
     {
         var monitors = GetMonitors();
         MigrateLegacy(monitors);
@@ -69,7 +68,7 @@ public sealed class DisplayPreferenceService
             ? null
             : monitors.FirstOrDefault(monitor => monitor.Id == _preferredId);
 
-        return preferred?.Screen ?? Screen.FromPoint(cursorPosition);
+        return preferred?.Screen ?? ScreenHelper.FromPoint(cursorPosition);
     }
 
     public bool TrySetPreferredDisplay(string? monitorId, out string? error)
@@ -134,9 +133,9 @@ public sealed class DisplayPreferenceService
     {
         var details = DisplayConfigNative.GetMonitorDetails();
 
-        var screens = Screen.AllScreens
-            .OrderBy(screen => screen.Bounds.X)
-            .ThenBy(screen => screen.Bounds.Y)
+        var screens = ScreenHelper.GetAllScreens()
+            .OrderBy(screen => screen.Bounds.Left)
+            .ThenBy(screen => screen.Bounds.Top)
             .ToArray();
 
         var monitors = screens.Select(screen =>
@@ -157,7 +156,7 @@ public sealed class DisplayPreferenceService
                 : monitor.Model;
             var bounds = monitor.Screen.Bounds;
             name += $" ({bounds.Width}×{bounds.Height})";
-            if (monitor.Screen.Primary) name += $" ({_language.GetString("DisplayMain")})";
+            if (monitor.Screen.IsPrimary) name += $" ({_language.GetString("DisplayMain")})";
             return new MonitorInfo(monitor.Screen, monitor.Id, name);
         }).ToArray();
     }

@@ -23,10 +23,16 @@ public partial class App : Application
 
     private TaskbarIcon? _trayIcon;
     private System.IO.Stream? _trayIconStream;
+    // ホットキー登録とStoreのダイアログ親用。コンテンツを持たないため、ポップアップ・設定画面を遅延生成できる
+    private Window? _hostWindow;
     private TrayPopupWindow? _popupWindow;
     private SettingsWindow? _settingsWindow;
     private GlobalHotkeyService? _hotkeyService;
     private DispatcherTimer? _licenseRefreshTimer;
+    private DispatcherTimer? _memoryTrimTimer;
+
+    // 閉じた直後の再表示で縮小と再読み込みが繰り返されないよう、少し待ってから縮小する
+    private static readonly TimeSpan MemoryTrimDelay = TimeSpan.FromSeconds(5);
 
     // 期限切れはローカル時刻で即時判定するため、定期確認は粗くてよい。Storeは変更通知もある
 #if LICENSE_STORE || LICENSE_STORE_DEV
@@ -38,6 +44,9 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // 既定のD3D描画はGPUドライバ側のメモリを大量に確保する。小さなポップアップには不要なためCPU描画にする
+        System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
 
         AppLog.Initialize();
         AppLog.AttachToTrace();
@@ -55,8 +64,15 @@ public partial class App : Application
             args.SetObserved();
         };
 
-        Services = ConfigureServices(() =>
-            _popupWindow is null ? IntPtr.Zero : new WindowInteropHelper(_popupWindow).EnsureHandle());
+        _hostWindow = new Window
+        {
+            Width = 0,
+            Height = 0,
+            WindowStyle = WindowStyle.None,
+            ShowInTaskbar = false,
+            ShowActivated = false,
+        };
+        Services = ConfigureServices(() => new WindowInteropHelper(_hostWindow!).EnsureHandle());
         var language = Services.GetRequiredService<LanguageService>();
 
         _singleInstanceMutex = new Mutex(true, GetMutexName(), out var isNew);
@@ -68,13 +84,17 @@ public partial class App : Application
             return;
         }
 
-        _popupWindow = new TrayPopupWindow(
-            Services.GetRequiredService<TrayViewModel>(),
-            Services.GetRequiredService<DisplayPreferenceService>());
+        _memoryTrimTimer = new DispatcherTimer { Interval = MemoryTrimDelay };
+        _memoryTrimTimer.Tick += (_, _) =>
+        {
+            _memoryTrimTimer.Stop();
+            if (!IsAnyWindowVisible)
+                MemoryTrimmer.Trim();
+        };
+
         _hotkeyService = Services.GetRequiredService<GlobalHotkeyService>();
         var hotkeyRegistered = _hotkeyService.Initialize(
-            _popupWindow, () => _popupWindow.TogglePopup(ignoreRecentDeactivation: true), out var hotkeyError);
-        _settingsWindow = new SettingsWindow(Services.GetRequiredService<SettingsViewModel>());
+            _hostWindow, () => GetPopupWindow().TogglePopup(ignoreRecentDeactivation: true), out var hotkeyError);
 
         SetupTrayIcon();
 
@@ -101,6 +121,31 @@ public partial class App : Application
 #endif
         };
         _licenseRefreshTimer.Start();
+
+        // 起動処理で膨らんだメモリを、ウィンドウを開く前に一度縮小する
+        ScheduleMemoryTrim();
+    }
+
+    private bool IsAnyWindowVisible => _popupWindow?.IsVisible == true || _settingsWindow?.IsVisible == true;
+
+    private void ScheduleMemoryTrim()
+    {
+        if (_memoryTrimTimer is null) return;
+
+        _memoryTrimTimer.Stop();
+        if (!IsAnyWindowVisible)
+            _memoryTrimTimer.Start();
+    }
+
+    private TrayPopupWindow GetPopupWindow()
+    {
+        if (_popupWindow is not null) return _popupWindow;
+
+        _popupWindow = new TrayPopupWindow(
+            Services.GetRequiredService<TrayViewModel>(),
+            Services.GetRequiredService<DisplayPreferenceService>());
+        _popupWindow.IsVisibleChanged += (_, _) => ScheduleMemoryTrim();
+        return _popupWindow;
     }
 
 #if LICENSE_STORE || LICENSE_STORE_DEV
@@ -196,12 +241,12 @@ public partial class App : Application
             Icon = new System.Drawing.Icon(_trayIconStream),
             ToolTipText = "SonarController",
         };
-        _trayIcon.TrayLeftMouseUp += (_, _) => _popupWindow?.TogglePopup();
+        _trayIcon.TrayLeftMouseUp += (_, _) => GetPopupWindow().TogglePopup();
 
         var contextMenu = new System.Windows.Controls.ContextMenu();
         var openItem = new System.Windows.Controls.MenuItem();
         openItem.SetResourceReference(System.Windows.Controls.HeaderedContentControl.HeaderProperty, "Open");
-        openItem.Click += (_, _) => _popupWindow?.ShowPopup();
+        openItem.Click += (_, _) => GetPopupWindow().ShowPopup();
         var settingsItem = new System.Windows.Controls.MenuItem();
         settingsItem.SetResourceReference(System.Windows.Controls.HeaderedContentControl.HeaderProperty, "SettingsTitle");
         settingsItem.Click += (_, _) => ShowSettingsWindow();
@@ -220,7 +265,20 @@ public partial class App : Application
 
     public void ShowSettingsWindow()
     {
-        if (_settingsWindow is null) return;
+        if (_settingsWindow is null)
+        {
+            var window = new SettingsWindow(Services.GetRequiredService<SettingsViewModel>());
+            window.IsVisibleChanged += (_, _) => ScheduleMemoryTrim();
+            // 閉じるたびに破棄し、非表示中にビジュアルツリーを保持しない
+            window.Closed += (_, _) =>
+            {
+                if (ReferenceEquals(_settingsWindow, window))
+                    _settingsWindow = null;
+                ScheduleMemoryTrim();
+            };
+            _settingsWindow = window;
+        }
+
         _settingsWindow.Show();
         _settingsWindow.WindowState = WindowState.Normal;
         _settingsWindow.Activate();
@@ -229,6 +287,7 @@ public partial class App : Application
     private void ExitApplication()
     {
         _licenseRefreshTimer?.Stop();
+        _memoryTrimTimer?.Stop();
         _hotkeyService?.Dispose();
         _trayIcon?.Dispose();
         _trayIconStream?.Dispose();

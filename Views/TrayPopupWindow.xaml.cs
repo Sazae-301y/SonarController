@@ -210,7 +210,7 @@ public partial class TrayPopupWindow : Window
     {
         if (ActualWidth <= 0 || ActualHeight <= 0) return;
 
-        var cursor = System.Windows.Forms.Cursor.Position;
+        var cursor = ScreenHelper.GetCursorPosition();
         var screen = _displayPreferenceService.GetDisplayForPopup(cursor);
         var workArea = screen.WorkingArea;
         // 物理ピクセルで計算するため、余白はポップアップが載っているモニターのDPIで換算する
